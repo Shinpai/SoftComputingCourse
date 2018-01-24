@@ -1,4 +1,3 @@
-'''Use normal env and utf-8'''
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import random as rng
@@ -18,9 +17,7 @@ PRINTING = False
 
 class Chromosome:
     ''' Individual Chromosome '''
-    def __init__(self, num, gene=None):        
-        # binaryyn format(num, '08b') takaisin int(binary, 2)
-        # x1,x2 arvo väliltä 1-5
+    def __init__(self, num, gene=None):
         self.gene = [gene]        
         if gene is None:
             self.gene = [format(rng.getrandbits(16), '016b')]
@@ -28,7 +25,7 @@ class Chromosome:
         self.fitness = None
 
     def print_chr(self):
-        ''' printtaa tarvittavat '''
+        ''' Print info of a Chromosome '''
         print('#' + str(self.gene) + ' with fitness ' + str(self.fitness))
 
 
@@ -133,7 +130,7 @@ class Population:
         self.chromosomes = [c for c in self.chromosomes if c.num != removable[0]]
 
     def print_gen(self):
-        ''' Prints info from chromosomes '''
+        ''' Prints info of a population '''
         print('- Current generation -')
         for c in self.chromosomes:
             c.print_chr()
