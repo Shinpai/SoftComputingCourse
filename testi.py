@@ -34,7 +34,6 @@ class Population:
         self.individuals = []
         self.crossovers = 0
         self.mutations = 0
-        self.newPop = []
         self.size = 0
 
     def initialize_population(self):
