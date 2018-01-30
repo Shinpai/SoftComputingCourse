@@ -21,16 +21,14 @@ class Individual:
         if gene is None:
             self.gene = [format(rng.getrandbits(16), '016b')]
         self.num = num
-        self.fitness = None
         self.function_value = None
         self.x_1 = 0
         self.x_2 = 0
 
     def print_chr(self):
         ''' Print info of an Individual '''
-        print('#' + str(self.num) + ' Fitness : ' +
-                    # str(format(self.fitness, '.2f')) + ' -- Value : ' +
-                    str(format(self.function_value, '.2f')) + 
+        print('#' + str(self.num) + ' Func value : ' +
+                    str(format(self.function_value, '.2f')) +
                     str(' -- (' + format(self.x_1, '.2f') + ',' + format(self.x_2, '.2f')) + ')')
 
 
@@ -40,7 +38,6 @@ class Population:
         self.individuals = []
         self.crossovers = 0
         self.mutations = 0
-        self.newPop = []
         self.fittest = None
         self.size = 0
 
@@ -65,28 +62,12 @@ class Population:
             ind.x_1 = x_1
             ind.x_2 = x_2
             ind.function_value = abs(self.funktio(x_1, x_2))
-            ind.fitness = ind.function_value  # transform to maximize?
-
-            if self.fittest is None:
-                self.fittest = ind
-            elif ind.fitness > self.fittest.fitness:
-                self.fittest = ind
 
     def tournament_select(self):
         '''  '''
         pool = self.individuals[:]
-        pool.sort(key=lambda x: x.fitness, reverse=True)
-            
-        '''
-        sorted_by_fitness = sorted(self.individuals, key=lambda x: x.fitness, reverse=True)
-        t_1 = sorted_by_fitness.pop(0)
-        t_2 = sorted_by_fitness.pop(0)
-        if t_1.fitness > t_2.fitness:
-            parent_1 = t_1
-        else:
-            parent_1 = t_2
-        parent_2 = parent_1
-        '''
+        pool = sorted(pool, key=lambda x: x.function_value, reverse=True)
+        return pool.pop()
 
     def sp_crossover(self, parent_1, parent_2):
         ''' Single point crossover, creates 2 children from parents'''
@@ -147,47 +128,42 @@ def run_ga():
     pop = Population()
     pop.initialize_population()
     pop.print_gen()
-    for generation in range(ITERATIONS):        
+    for generation in range(ITERATIONS):
         if DEBUG:
             input('Press enter for next...')
         print('\nGENERATION %s' % (generation))
         print('-'*30)
-        pop.tournament_select()
         pop.evaluate()
-        pop.newPop.clear()
-        for indi in pop.individuals:  # 'evolve' individuals in population
+        next_population = Population()
+        while len(next_population.individuals) < len(pop.individuals):
+            parent1 = pop.tournament_select()
             if rng.random() < PROB_CROSSOVER:
-                child1, child2 = pop.sp_crossover(pop.fittest, indi)
-                pop.newPop.append(child1)
-                pop.newPop.append(child2)
+                parent2 = pop.tournament_select()
+                child1, child2 = pop.sp_crossover(parent1, parent2)
+                next_population.individuals.append(child1)
+                next_population.individuals.append(child2)
+            else:
+                next_population.individuals.append(parent1)
+            next_population.evaluate()
             if rng.random() < PROB_MUTATION:
-                mutated = pop.mutate(indi)
-                pop.newPop.append(mutated)
-        pop.evaluate()
-        pop.individuals.sort(key=lambda x: x.fitness, reverse=True)
-        # top 10 out of new population for next starting population
-        pop.individuals = pop.newPop[:10]
+                target = next_population.tournament_select()
+                mutated = pop.mutate(target)
+                next_population.individuals.append(mutated)
+        next_population.evaluate()
+        next_population.individuals = sorted(next_population.individuals, key=lambda x: x.function_value, reverse=True)
+        # choose the top 10 individuals for the next population
+        pop.individuals = next_population.individuals[:10]
         pop.evaluate()
         pop.print_gen()
         print('Individuals ' + str(len(pop.individuals)) +
               ', Crossovers ' + str(pop.crossovers) +
               ', Mutations ' + str(pop.mutations))
-        clear()
-    return pop.fittest
 
 
 def main():
     clear()
-    # set of 10 * 50 generations for testing
-    tests = []
-    try:
-        while len(tests) < 10:
-            tests.append(run_ga())
-    except KeyboardInterrupt as e:
-        print('interrupted')
-    tests.sort(key=lambda x: x.fitness, reverse=True)
-    for i in tests:
-        print(i.print_chr())
+    run_ga()
+    exit(0)
 
 ##############################################################################
 
