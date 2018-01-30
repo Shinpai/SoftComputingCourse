@@ -66,7 +66,7 @@ class Population:
     def tournament_select(self):
         '''  '''
         pool = self.individuals[:]
-        pool = sorted(pool, key=lambda x: x.function_value, reverse=True)
+        pool = sorted(pool, key=lambda x: x.function_value)
         return pool.pop()
 
     def sp_crossover(self, parent_1, parent_2):
@@ -150,7 +150,9 @@ def run_ga():
                 mutated = pop.mutate(target)
                 next_population.individuals.append(mutated)
         next_population.evaluate()
-        next_population.individuals = sorted(next_population.individuals, key=lambda x: x.function_value, reverse=True)
+        next_population.individuals = sorted(next_population.individuals, key=lambda x: x.function_value)
+        print('BEST')
+        next_population.individuals[0].print_chr()
         # choose the top 10 individuals for the next population
         pop.individuals = next_population.individuals[:10]
         pop.evaluate()
