@@ -151,15 +151,15 @@ def run_ga():
                 next_population.individuals.append(mutated)
         next_population.evaluate()
         next_population.individuals = sorted(next_population.individuals, key=lambda x: x.function_value)
-        print('BEST')
-        next_population.individuals[0].print_chr()
         # choose the top 10 individuals for the next population
         pop.individuals = next_population.individuals[:10]
         pop.evaluate()
-        pop.print_gen()
         print('Individuals ' + str(len(pop.individuals)) +
               ', Crossovers ' + str(pop.crossovers) +
               ', Mutations ' + str(pop.mutations))
+    print(str(pop.funktio(5, 3)))
+    print(str(pop.funktio(5, 5)))
+    print(str(pop.funktio(5, 1)))
 
 
 def main():
