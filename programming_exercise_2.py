@@ -8,55 +8,80 @@ import math
 POPULATION_SIZE = 20
 ACC_CONST = 2  # learning factor
 MAX_VELOC = 3
-# record 100 and 2000 iterations with local and global, compare results
-ITERATIONS = 100
+X_LOWER, Y_LOWER = -1
+X_UPPER = 2
+Y_UPPER = 1
+DIMENSION = 2  # two variables
 
 
-class Individual:
-    ''' Individual '''
+class Particle:
+    def __init__(self, index):
+        self.index = index
+        self.position = [rng.uniform(X_LOWER, X_UPPER),
+                         rng.uniform(Y_LOWER, Y_UPPER)]
+        self.velocity = [rng.uniform(0, MAX_VELOC) for i in range(DIMENSION)]
+
+        self.current_value = self.evaluate(self.x, self.y)
+        self.pbest = []
+
+    def evaluate(self, x, y):
+        ''' Function to optimize (or minimize) '''
+        return math.cos(x) * math.cos(y) - (x / (y ** 2 + 1))
+
+    def compare_pbest(self):
+        if self.pbest is None:
+            self.pbest = self.current_value
+        elif self.current_value < self.pbest:
+                self.pbest = self.current_value
+
+    def update_velocity(self):
+        pass
+
+    def print_par(self):
+        ''' Print info of a particle '''
+        print('\nParticle #' + str(round(self.index, 2)) +
+              '\n** (x, y) = ' + str(round(self.x, 2)), str(round(self.y, 2)) +
+              '\n** Velocity = ' + str(round(self.velocity, 2)) +
+              '\n** Current value = ' + str(round(self.current_value, 2)))
+
+
+class Swarm:
+    ''' Set of Particles '''
     def __init__(self):
-        pass
+        self.particles = []
+        self.gbest = None
 
-    def print_chr(self):
-        ''' Print info of an Individual '''
-        pass
+    def initialize_swarm(self):
+        ''' Initializes a swarm with size '''
+        for i in range(POPULATION_SIZE):
+            self.particles.append(Particle(i))
 
-
-class Population:
-    ''' Set of Individuals '''
-    def __init__(self):
-        pass
-
-    def initialize_population(self):
-        ''' Initializes a population with size '''
-        pass
-    
-    def funktio(self, x_1, x_2):
-        ''' Function to minimize '''
-        pass
-
-    def evaluate(self):
-        '''  '''
-        pass
-
-    def tournament_select(self):
-        pass
-
-    def sp_crossover(self, parent_1, parent_2):
-        ''' '''
-        pass
-
-    def mutate(self, ind):
-        ''' '''
-        pass
-
-    def flip_bins(self, gene):
-        ''' '''
+    def compare_gbest(particle):
         pass
 
     def print_gen(self):
         ''' '''
-        pass
+        print('Swarm best = ' + self.gbest.print_par())
+
+
+def pso_gbest():
+    swarm = Swarm()
+    swarm.initialize_swarm()
+    while (ITERATIONS > 0):
+        for particle in swarm.particles:
+            # evaluate particle position with function
+            particle.evaluate()
+            # compare value to particles best local value
+            particle.compare_pbest()
+            # compare value to swarms best global value
+            swarm.compare_gbest(particle)
+            # update velocity
+            particle.update_velocity()
+            # update position
+            particle.move()
+            # print info
+            swarm.print_gen()
+        ITERATIONS -= 1
 
 
 def clear():
@@ -85,8 +110,10 @@ def main():
             W[dI = W[dI + ACC-CONST*rand()*(PBESTx[] [d] - PresentX[] [d]) + ACC-CONST*rand()*(PBESTx[GBEST] [d] - PresentX[l[d]),
     6. Move to PresentX[][d] + v[][d]: Loop to step 2 and repeat until a criterion is met.    
     '''
-    pso_gbest()
     clear()
+    # record 100 and 2000 iterations with local and global, compare results
+    ITERATIONS = 2000
+    pso_gbest(ITERATIONS)
 
 ##############################################################################
 
