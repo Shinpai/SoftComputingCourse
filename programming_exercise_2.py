@@ -8,7 +8,8 @@ import math
 POPULATION_SIZE = 20
 ACC_CONST = 2  # learning factor
 MAX_VELOC = 3
-X_LOWER, Y_LOWER = -1
+X_LOWER = -1
+Y_LOWER = -1
 X_UPPER = 2
 Y_UPPER = 1
 DIMENSION = 2  # two variables
@@ -21,28 +22,41 @@ class Particle:
                          rng.uniform(Y_LOWER, Y_UPPER)]
         self.velocity = [rng.uniform(0, MAX_VELOC) for i in range(DIMENSION)]
 
-        self.current_value = self.evaluate(self.x, self.y)
-        self.pbest = []
+        self.current_value = None
+        self.pbest = None
 
-    def evaluate(self, x, y):
+    def evaluate(self):
         ''' Function to optimize (or minimize) '''
-        return math.cos(x) * math.cos(y) - (x / (y ** 2 + 1))
+        x = self.position[0]
+        y = self.position[1]
+        self.current_value = (math.cos(x) * math.cos(y) - (x / (y ** 2 + 1)))
 
     def compare_pbest(self):
+        ''' marks down the personal best value of a particle '''
         if self.pbest is None:
             self.pbest = self.current_value
-        elif self.current_value < self.pbest:
-                self.pbest = self.current_value
+        if self.current_value < self.pbest:
+            self.pbest = self.current_value
 
-    def update_velocity(self):
-        pass
+    def update_velocity(self, gbest):
+        ''' randomly updates the velocity of a particle '''
+        for i in range(DIMENSION):
+            self.velocity[i] = self.velocity[i]
+            + ACC_CONST * rng.random() * (self.pbest - self.current_value)
+            + ACC_CONST * rng.random() * (gbest - self.current_value)
+
+    def move(self):
+        for i in range(DIMENSION):
+            self.position[i] += self.velocity[i]
 
     def print_par(self):
         ''' Print info of a particle '''
-        print('\nParticle #' + str(round(self.index, 2)) +
-              '\n** (x, y) = ' + str(round(self.x, 2)), str(round(self.y, 2)) +
-              '\n** Velocity = ' + str(round(self.velocity, 2)) +
-              '\n** Current value = ' + str(round(self.current_value, 2)))
+        print('\nParticle #' + str(self.index) +
+              '\n** (x, y) = ' + str(round(self.position[0], 3)) +
+              ',' + str(round(self.position[1], 3)) +
+              '\n** Velocity x = ' + str(round(self.velocity[0], 3)) +
+              '\n** Velocity y = ' + str(round(self.velocity[1], 3)) +
+              '\n** Current value = ' + str(round(self.current_value, 3)))
 
 
 class Swarm:
@@ -56,18 +70,23 @@ class Swarm:
         for i in range(POPULATION_SIZE):
             self.particles.append(Particle(i))
 
-    def compare_gbest(particle):
-        pass
+    def compare_gbest(self, particle):
+        '''  '''
+        if self.gbest is None:
+            self.gbest = particle.current_value
+        if particle.current_value < self.gbest:
+            self.gbest = particle.current_value
 
     def print_gen(self):
-        ''' '''
-        print('Swarm best = ' + self.gbest.print_par())
+        ''' prints out the necessary info for a generation '''
+        print('Swarm best: ' + str(round(min(i.pbest for i in self.particles), 3)))
 
 
-def pso_gbest():
+def pso_gbest(ITERATIONS):
     swarm = Swarm()
     swarm.initialize_swarm()
-    while (ITERATIONS > 0):
+    ITERATION = 0
+    while(ITERATION < ITERATIONS):
         for particle in swarm.particles:
             # evaluate particle position with function
             particle.evaluate()
@@ -76,12 +95,11 @@ def pso_gbest():
             # compare value to swarms best global value
             swarm.compare_gbest(particle)
             # update velocity
-            particle.update_velocity()
+            particle.update_velocity(swarm.gbest)
             # update position
             particle.move()
-            # print info
-            swarm.print_gen()
-        ITERATIONS -= 1
+        ITERATION += 1
+    return round(swarm.gbest, 3)
 
 
 def clear():
@@ -98,22 +116,24 @@ def clear():
 
 
 def main():
-    '''
-    FRAMEWORK GBEST model
-    1. Initialize an array of particles with random positions and velocities on D dimensions, 
-    2. Evaluate the desired minimization function in D variables, 
-    3. Compare evaluation with particle’s previous best value (PBEST[]): 
-            If current value < PBEST[] then PBEST[] = current value and PBESTx[][d] = current position in D- dimensional hyperspace, 
-    4. Compare evaluation with group’s previous best (PBEST[GBEST]): 
-            If current value < PBESTCGBEST] then GBEST=particle’s array index, 
-    5. Change velocity by the following formula:
-            W[dI = W[dI + ACC-CONST*rand()*(PBESTx[] [d] - PresentX[] [d]) + ACC-CONST*rand()*(PBESTx[GBEST] [d] - PresentX[l[d]),
-    6. Move to PresentX[][d] + v[][d]: Loop to step 2 and repeat until a criterion is met.    
-    '''
     clear()
     # record 100 and 2000 iterations with local and global, compare results
+    ITERATIONS = 100
+    tests = []
+    for i in range(10):
+        tests.append(pso_gbest(ITERATIONS))
+    print('Test on ' + str(ITERATIONS) + ' iterations')
+    for k in tests:
+        print('Swarm best value = ' + str(k))
+    
     ITERATIONS = 2000
-    pso_gbest(ITERATIONS)
+    tests = []
+    for i in range(10):
+        tests.append(pso_gbest(ITERATIONS))
+    print('Test on ' + str(ITERATIONS) + ' iterations')
+    for k in tests:
+        print('Swarm best value = ' + str(k))
+
 
 ##############################################################################
 
