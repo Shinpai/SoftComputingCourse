@@ -3,26 +3,25 @@
 import random as rng
 import os
 import math
-import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib import animation
 
 # Given parameters
 POPULATION_SIZE = 20
 ACC_CONST = 2  # learning factor
 MAX_VELOC = 3
-X_LOWER = -1
-Y_LOWER = -1
-X_UPPER = 2
-Y_UPPER = 1
-DIMENSION = 2  # two variables
-ITERATIONS = 10
+BOUNDS = [(-1, 2), (-1, 1)]
+DIM = 2  # two variables
+ITERATIONS = 100
 
 
 class Particle:
     def __init__(self, index):
         self.index = index
-        self.position = [rng.uniform(X_LOWER, X_UPPER),
-                         rng.uniform(Y_LOWER, Y_UPPER)]
-        self.velocity = [rng.uniform(0, MAX_VELOC) for i in range(DIMENSION)]
+        self.position = [rng.uniform(BOUNDS[0][0], BOUNDS[0][1]),
+                         rng.uniform(BOUNDS[1][0], BOUNDS[1][1])]
+        self.velocity = [rng.uniform(0, MAX_VELOC) for i in range(DIM)]
 
         self.fitness = 0.0
         self.pbest = 0.0
@@ -40,13 +39,19 @@ class Particle:
 
     def update_velocity(self, gbest):
         ''' randomly updates the velocity of a particle '''
-        for i in range(DIMENSION):
+        for i in range(DIM):
             self.velocity[i] = self.velocity[i]
             + ACC_CONST * rng.random() * (self.pbest - self.position[i])
             + ACC_CONST * rng.random() * (gbest - self.position[i])
 
     def move(self):
-        self.position = self.position + self.velocity
+        for i in range(DIM):
+            self.position[i] = self.position[i] + self.velocity[i]
+
+            if self.position[i] > BOUNDS[i][1]:
+                self.position[i] = BOUNDS[i][1]
+            if self.position[i] < BOUNDS[i][0]:
+                self.position[i] = BOUNDS[i][0]
 
     def print_par(self):
         ''' Print info of a particle '''
@@ -90,11 +95,13 @@ class Swarm:
         ''' prints out the necessary info for a generation '''
         print('\nRESULTS\n', '-'*7)
         print(mode + ' fitness   : ', str(round(self.gbest, 3)))
-        print(mode + ' params    : ', str(self.gbest_pos))
+        print(mode + ' X    : ', str(self.gbest_pos[0]))
+        print(mode + ' Y    : ', str(self.gbest_pos[1]))
         print('iterations      : ', index)
 
 
 def PSO(swarm, mode):
+    frames = []
     i = 0
     while (i < ITERATIONS):
         for particle in swarm.particles:
@@ -112,20 +119,21 @@ def PSO(swarm, mode):
             particle.update_velocity(swarm.gbest)
             # update position
             particle.move()
+        swarm.print_gen(i, mode)
         i += 1
-        draw_swarm(swarm)
+        frames.append(draw_swarm(swarm))
         if i == 100 or i == ITERATIONS:
             swarm.print_gen(i, mode)
+    return frames
 
 
 def draw_swarm(swarm):
     x = [par.position[0] for par in swarm.particles]
     y = [par.position[1] for par in swarm.particles]
-    plt.plot(x, y, 'ro')
-    plt.axis([-5, 5, -5, 5])
-    plt.draw_if_interactive()
-    plt.pause(0.05)
-    plt.clf()
+    z = swarm.gbest_pos[0]
+    k = swarm.gbest_pos[1]
+    frame = (x, y, z, k)
+    return frame
 
 
 def clear():
@@ -141,17 +149,38 @@ def clear():
         print("\n" * 30)
 
 
+def animate(frames):
+    plt.ion()
+    plt.axis([-3, 3, -3, 3])
+    index = 0
+    for frame in frames:
+        plt.title(index)
+        # draw particles - red
+        plt.plot(frame[0], frame[1], 'ro')
+        # draw swarm best - blue
+        plt.plot(frame[2], frame[3], 'bo')
+        plt.axis([-1.5, 2.5, -1.5, 1.5])        
+        plt.pause(0.01)
+        plt.cla()
+        index += 1
+
+
 def main():
     clear()
     mode = 'gbest'
     swarm = Swarm()
     swarm.initialize_swarm()
-    PSO(swarm, mode)
+    frames = PSO(swarm, mode)
+    # visualisaatio
+    animate(frames)
     exit(0)
 
     mode = 'lbest'
-    for i in range(ITERATIONS + 1):
-        PSO(ITERATIONS, i, mode)
+    swarm = Swarm()
+    swarm.initialize_swarm()
+    frames = PSO(swarm, mode)
+    # visualisaatio
+    animate(frames)
 
 ##############################################################################
 
