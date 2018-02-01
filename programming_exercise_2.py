@@ -3,7 +3,6 @@
 import random as rng
 import os
 import math
-import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import animation
 
@@ -19,8 +18,8 @@ ITERATIONS = 100
 class Particle:
     def __init__(self, index):
         self.index = index
-        self.position = [rng.uniform(BOUNDS[0][0], BOUNDS[0][1]),
-                         rng.uniform(BOUNDS[1][0], BOUNDS[1][1])]
+        self.position = [rng.uniform(BOUNDS[i][0],
+                                     BOUNDS[i][1]) for i in range(DIM)]
         self.velocity = [rng.uniform(0, MAX_VELOC) for i in range(DIM)]
 
         self.fitness = 0.0
@@ -30,7 +29,7 @@ class Particle:
         ''' Function to optimize (minimize) '''
         x = self.position[0]
         y = self.position[1]
-        self.fitness = (math.cos(x) * math.cos(y) - (x / (y ** 2 + 1)))
+        self.fitness = math.cos(x) * math.cos(y) - (x / (y ** 2 + 1))
 
     def compare_pbest(self):
         ''' marks down the personal best value of a particle '''
@@ -49,7 +48,7 @@ class Particle:
     def move(self):
         for i in range(DIM):
             self.position[i] = self.position[i] + self.velocity[i]
-
+        # TODO : set torque boundaries somehow?
             if self.position[i] > BOUNDS[i][1]:
                 self.position[i] = BOUNDS[i][1]
             if self.position[i] < BOUNDS[i][0]:
@@ -70,7 +69,7 @@ class Swarm:
     def __init__(self):
         self.particles = []
         self.gbest = 0.0
-        self.gbest_pos = 0.0
+        self.gbest_pos = []
 
     def initialize_swarm(self):
         ''' Initializes a swarm with size '''
@@ -79,23 +78,20 @@ class Swarm:
 
     def compare_gbest(self, particle):
         ''' Compare value to best of swarm '''
+        if self.gbest == 0.0 and self.gbest_pos == []:
+            self.gbest = particle.fitness
+            self.gbest_pos = particle.position
         if particle.fitness < self.gbest:
             self.gbest = particle.fitness
             self.gbest_pos = particle.position
 
     def compare_lbest(self, particle):
         ''' Compare value to neighboring particles '''
-        if particle.index > 2:
-            n1 = self.particles[particle.index - 1]
-            n2 = self.particles[particle.index + 1]
-            if self.lbest is None:
-                self.lbest = particle.fitness
-            if particle.fitness < self.lbest:
-                self.lbest = particle.fitness
+        pass
 
     def print_gen(self, index, mode):
         ''' prints out the necessary info for a generation '''
-        print('\nRESULTS\n', '-'*7)
+        print('\nRESULT\n', '-'*7)
         print(mode + ' fitness   : ', str(round(self.gbest, 3)))
         print(mode + ' X    : ', str(self.gbest_pos[0]))
         print(mode + ' Y    : ', str(self.gbest_pos[1]))
@@ -106,31 +102,35 @@ def PSO(swarm, mode):
     frames = []
     i = 0
     while (i < ITERATIONS):
+        # calculate fitness for particles
+        # and set a personal best
         for particle in swarm.particles:
-            # evaluate particle position with function
             particle.evaluate()
-            if mode == 'gbest':
-                # compare value to populations best value
-                particle.compare_pbest()
-            else:
-                # compare value to best neighboring particle
-                swarm.compare_lbest(particle)
-            # compare value to swarms best global value
+            particle.compare_pbest()
+        # compare value to populations best value
+        if mode == 'gbest':
             swarm.compare_gbest(particle)
-            # update velocity
+        # or compare value to best neighboring particle
+        else:
+            swarm.compare_lbest(particle)
+        # update velocity and position for particles
+        for particle in swarm.particles:
             particle.update_velocity(swarm.gbest)
-            # update position
             particle.move()
-        i += 1
+        # make a snapshot for visualisation
         frames.append(make_frame(swarm))
+        # print indicated levels of iteration
+        i += 1
         if i == 100 or i == ITERATIONS:
             swarm.print_gen(i, mode)
     return frames
 
 
 def make_frame(swarm):
+    ''' Create a snapshot of swarm particle positions '''
     x = [par.position[0] for par in swarm.particles]
     y = [par.position[1] for par in swarm.particles]
+    # mark best of swarm for snapshot
     z = swarm.gbest_pos[0]
     k = swarm.gbest_pos[1]
     frame = (x, y, z, k)
@@ -151,6 +151,7 @@ def clear():
 
 
 def animate(frames):
+    ''' animate snapshots of the swarm with plt '''
     plt.ion()
     plt.axis([-3, 3, -3, 3])
     index = 0
@@ -162,20 +163,21 @@ def animate(frames):
         # draw swarm best - blue
         plt.plot(frame[2], frame[3], 'bo')
         plt.axis([-1.5, 2.5, -1.5, 1.5])
-        plt.pause(0.01)
+        plt.pause(0.001)
         plt.clf()
         index += 1
 
 
 def main():
     clear()
-    drawing = False
+    drawing = True
     mode = 'gbest'
+    # initialize new swarm
     swarm = Swarm()
     swarm.initialize_swarm()
     frames = PSO(swarm, mode)
     if drawing:
-        # visualisaatio
+        # visualisation
         animate(frames)
     exit(0)
 
