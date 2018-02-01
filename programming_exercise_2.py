@@ -43,6 +43,8 @@ class Particle:
             self.velocity[i] = self.velocity[i]
             + ACC_CONST * rng.random() * (self.pbest - self.position[i])
             + ACC_CONST * rng.random() * (gbest - self.position[i])
+            if self.velocity[i] > MAX_VELOC:
+                self.velocity[i] = MAX_VELOC
 
     def move(self):
         for i in range(DIM):
@@ -119,15 +121,14 @@ def PSO(swarm, mode):
             particle.update_velocity(swarm.gbest)
             # update position
             particle.move()
-        swarm.print_gen(i, mode)
         i += 1
-        frames.append(draw_swarm(swarm))
+        frames.append(make_frame(swarm))
         if i == 100 or i == ITERATIONS:
             swarm.print_gen(i, mode)
     return frames
 
 
-def draw_swarm(swarm):
+def make_frame(swarm):
     x = [par.position[0] for par in swarm.particles]
     y = [par.position[1] for par in swarm.particles]
     z = swarm.gbest_pos[0]
@@ -153,34 +154,38 @@ def animate(frames):
     plt.ion()
     plt.axis([-3, 3, -3, 3])
     index = 0
-    for frame in frames:
+    while index < len(frames):
+        frame = frames[index]
         plt.title(index)
         # draw particles - red
         plt.plot(frame[0], frame[1], 'ro')
         # draw swarm best - blue
         plt.plot(frame[2], frame[3], 'bo')
-        plt.axis([-1.5, 2.5, -1.5, 1.5])        
+        plt.axis([-1.5, 2.5, -1.5, 1.5])
         plt.pause(0.01)
-        plt.cla()
+        plt.clf()
         index += 1
 
 
 def main():
     clear()
+    drawing = False
     mode = 'gbest'
     swarm = Swarm()
     swarm.initialize_swarm()
     frames = PSO(swarm, mode)
-    # visualisaatio
-    animate(frames)
+    if drawing:
+        # visualisaatio
+        animate(frames)
     exit(0)
 
     mode = 'lbest'
     swarm = Swarm()
     swarm.initialize_swarm()
     frames = PSO(swarm, mode)
-    # visualisaatio
-    animate(frames)
+    if drawing:
+        # visualisaatio
+        animate(frames)
 
 ##############################################################################
 
