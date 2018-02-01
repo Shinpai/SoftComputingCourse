@@ -12,7 +12,7 @@ ACC_CONST = 2  # learning factor
 MAX_VELOC = 3
 BOUNDS = [(-1, 2), (-1, 1)]
 DIM = 2  # two variables
-ITERATIONS = 100
+ITERATIONS = 2000
 
 
 class Particle:
@@ -29,7 +29,7 @@ class Particle:
         ''' Function to optimize (minimize) '''
         x = self.position[0]
         y = self.position[1]
-        self.fitness = math.cos(x) * math.cos(y) - (x / (y ** 2 + 1))
+        return math.cos(x) * math.cos(y) - (x / (y ** 2 + 1))
 
     def compare_pbest(self):
         ''' marks down the personal best value of a particle '''
@@ -37,18 +37,20 @@ class Particle:
             self.pbest = self.fitness
 
     def update_velocity(self, gbest):
-        ''' randomly updates the velocity of a particle '''
+        ''' updates the velocity of a particle with weighted factors '''
         for i in range(DIM):
-            self.velocity[i] = self.velocity[i]
-            + ACC_CONST * rng.random() * (self.pbest - self.position[i])
-            + ACC_CONST * rng.random() * (gbest - self.position[i])
+            part_1 = self.velocity[i] * .3
+            part_2 = 1.3 * rng.random() * (self.pbest - self.position[i])
+            part_3 = .7 * rng.random() * (gbest - self.position[i])
+            self.velocity[i] = part_1 + part_2 + part_3
+            # apply constraints for velocity
             if self.velocity[i] > MAX_VELOC:
                 self.velocity[i] = MAX_VELOC
 
     def move(self):
         for i in range(DIM):
             self.position[i] = self.position[i] + self.velocity[i]
-        # TODO : set torque boundaries somehow?
+            # apply constraints for movement
             if self.position[i] > BOUNDS[i][1]:
                 self.position[i] = BOUNDS[i][1]
             if self.position[i] < BOUNDS[i][0]:
@@ -105,7 +107,7 @@ def PSO(swarm, mode):
         # calculate fitness for particles
         # and set a personal best
         for particle in swarm.particles:
-            particle.evaluate()
+            particle.fitness = particle.evaluate()
             particle.compare_pbest()
         # compare value to populations best value
         if mode == 'gbest':
@@ -118,9 +120,10 @@ def PSO(swarm, mode):
             particle.update_velocity(swarm.gbest)
             particle.move()
         # make a snapshot for visualisation
-        frames.append(make_frame(swarm))
-        # print indicated levels of iteration
+        if i % 5 == 0:
+            frames.append(make_frame(swarm))        
         i += 1
+        # print indicated levels of iteration
         if i == 100 or i == ITERATIONS:
             swarm.print_gen(i, mode)
     return frames
@@ -163,7 +166,7 @@ def animate(frames):
         # draw swarm best - blue
         plt.plot(frame[2], frame[3], 'bo')
         plt.axis([-1.5, 2.5, -1.5, 1.5])
-        plt.pause(0.001)
+        plt.pause(0.01)
         plt.clf()
         index += 1
 
