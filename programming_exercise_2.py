@@ -3,6 +3,7 @@
 import random as rng
 import os
 import math
+import matplotlib.pyplot as plt
 
 # Given parameters
 POPULATION_SIZE = 20
@@ -13,6 +14,7 @@ Y_LOWER = -1
 X_UPPER = 2
 Y_UPPER = 1
 DIMENSION = 2  # two variables
+ITERATIONS = 10
 
 
 class Particle:
@@ -92,26 +94,38 @@ class Swarm:
         print('iterations      : ', index)
 
 
-def PSO(ITERATIONS, index, mode):
-    swarm = Swarm()
-    swarm.initialize_swarm()
-    for particle in swarm.particles:
-        # evaluate particle position with function
-        particle.evaluate()
-        if mode == 'gbest':
-            # compare value to populations best value
-            particle.compare_pbest()
-        else:
-            # compare value to best neighboring particle
-            swarm.compare_lbest(particle)
-        # compare value to swarms best global value
-        swarm.compare_gbest(particle)
-        # update velocity
-        particle.update_velocity(swarm.gbest)
-        # update position
-        particle.move()
-    if index == 100 or index == ITERATIONS:
-        swarm.print_gen(index, mode)
+def PSO(swarm, mode):
+    i = 0
+    while (i < ITERATIONS):
+        for particle in swarm.particles:
+            # evaluate particle position with function
+            particle.evaluate()
+            if mode == 'gbest':
+                # compare value to populations best value
+                particle.compare_pbest()
+            else:
+                # compare value to best neighboring particle
+                swarm.compare_lbest(particle)
+            # compare value to swarms best global value
+            swarm.compare_gbest(particle)
+            # update velocity
+            particle.update_velocity(swarm.gbest)
+            # update position
+            particle.move()
+        i += 1
+        draw_swarm(swarm)
+        if i == 100 or i == ITERATIONS:
+            swarm.print_gen(i, mode)
+
+
+def draw_swarm(swarm):
+    x = [par.position[0] for par in swarm.particles]
+    y = [par.position[1] for par in swarm.particles]
+    plt.plot(x, y, 'ro')
+    plt.axis([-5, 5, -5, 5])
+    plt.draw_if_interactive()
+    plt.pause(0.05)
+    plt.clf()
 
 
 def clear():
@@ -129,10 +143,12 @@ def clear():
 
 def main():
     clear()
-    ITERATIONS = 2000
     mode = 'gbest'
-    for i in range(ITERATIONS + 1):
-        PSO(ITERATIONS, i, mode)
+    swarm = Swarm()
+    swarm.initialize_swarm()
+    PSO(swarm, mode)
+    exit(0)
+
     mode = 'lbest'
     for i in range(ITERATIONS + 1):
         PSO(ITERATIONS, i, mode)
