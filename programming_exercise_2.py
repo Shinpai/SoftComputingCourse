@@ -32,7 +32,7 @@ class Particle:
         self.fitness = (math.cos(x) * math.cos(y) - (x / (y ** 2 + 1)))
 
     def compare_pbest(self):
-        ''' marks down the personal best value of a particle '''        
+        ''' marks down the personal best value of a particle '''
         if self.fitness < self.pbest:
             self.pbest = self.fitness
 
@@ -84,11 +84,11 @@ class Swarm:
             if particle.fitness < self.lbest:
                 self.lbest = particle.fitness
 
-    def print_gen(self, index):
+    def print_gen(self, index, mode):
         ''' prints out the necessary info for a generation '''
         print('\nRESULTS\n', '-'*7)
-        print('gbest fitness   : ', str(round(self.gbest, 3)))
-        print('gbest params    : ', str(self.gbest_pos))
+        print(mode + ' fitness   : ', str(round(self.gbest, 3)))
+        print(mode + ' params    : ', str(self.gbest_pos))
         print('iterations      : ', index)
 
 
@@ -111,7 +111,7 @@ def PSO(ITERATIONS, index, mode):
         # update position
         particle.move()
     if index == 100 or index == ITERATIONS:
-        swarm.print_gen(index)
+        swarm.print_gen(index, mode)
 
 
 def clear():
@@ -131,6 +131,9 @@ def main():
     clear()
     ITERATIONS = 2000
     mode = 'gbest'
+    for i in range(ITERATIONS + 1):
+        PSO(ITERATIONS, i, mode)
+    mode = 'lbest'
     for i in range(ITERATIONS + 1):
         PSO(ITERATIONS, i, mode)
 
