@@ -1,0 +1,28 @@
+
+RESULT
+ -------
+local fitness   :  -1.787
+local X    :  1.0137852738824709
+local Y    :  0.5223385414447721
+iterations      :  100
+
+RESULT
+ -------
+local fitness   :  -2.059
+local X    :  0.9399016967711109
+local Y    :  -0.4277947635650632
+iterations      :  2000
+
+RESULT
+ -------
+local fitness   :  1.464
+local X    :  -0.3020378659220855
+local Y    :  -0.02355120271152833
+iterations      :  100
+
+RESULT
+ -------
+local fitness   :  1.464
+local X    :  -0.3020378659220855
+local Y    :  0.004148713355766276
+iterations      :  2000

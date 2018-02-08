@@ -3,6 +3,8 @@
 import random as rng
 import os
 
+# @author Harri Juutilainen 01/2018
+
 # Given parameters
 LOWER_BOUND = 1.0
 UPPER_BOUND = 5.0
