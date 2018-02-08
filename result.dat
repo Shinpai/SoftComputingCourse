@@ -1,28 +1,28 @@
 
 RESULT
  -------
-local fitness   :  -1.787
-local X    :  1.0137852738824709
-local Y    :  0.5223385414447721
 iterations      :  100
+global fitness   :  -2.136
+global X         :  1.988730419140067
+global Y         :  0.47293394842538516
 
 RESULT
  -------
-local fitness   :  -2.059
-local X    :  0.9399016967711109
-local Y    :  -0.4277947635650632
 iterations      :  2000
+global fitness   :  -2.107
+global X         :  1.988730419140067
+global Y         :  0.5270660515746148
 
 RESULT
  -------
-local fitness   :  1.464
-local X    :  -0.3020378659220855
-local Y    :  -0.02355120271152833
 iterations      :  100
+local fitness   :  -1.542
+local X         :  0.4292275317997607
+local Y         :  -0.9661138472032169
 
 RESULT
  -------
-local fitness   :  1.464
-local X    :  -0.3020378659220855
-local Y    :  0.004148713355766276
 iterations      :  2000
+local fitness   :  -1.337
+local X         :  0.4292275317997607
+local Y         :  0.47797894997357293

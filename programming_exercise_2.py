@@ -46,8 +46,6 @@ class Particle:
         '''
         if self.fitness < self.pbest.fitness:
             self.pbest = self
-        else:
-            self = self.pbest
 
     def update_velocity(self, v_kohde):
         ''' Updates the velocity of a particle with weighted factors '''
@@ -58,13 +56,14 @@ class Particle:
             # accelerate towards local or global best
             p_3 = ACC_CONST * rng.random() * (v_kohde.position[i] - self.position[i])
 
-            new = p_1 + p_2 + p_3
-            self.velocity[i] = max(-VMAX, min(VMAX, new))
+            self.velocity[i] = p_1 + p_2 + p_3
+            if self.velocity[i] > VMAX:
+                self.velocity[i] = VMAX
 
     def move(self):
         ''' Update the position of a particle '''
         for i in range(DIM):
-            self.position[i] += self.velocity[i]
+            self.position[i] = self.position[i] + self.velocity[i]
             # constraints for movement
             # BOUNDS = [(-1, 2), (-1, 1)]
             max_l = abs(BOUNDS[i][1] - BOUNDS[i][0])
@@ -85,14 +84,13 @@ class Particle:
 
 class Swarm:
     ''' Set of Particles '''
-    gbest = None
-
     def __init__(self):
         self.particles = []
+        self.gbest = None
         self.initialize_swarm()
 
     def initialize_swarm(self):
-        ''' Initializes a swarm with particles '''
+        ''' Initializes a swarm with random particles '''
         for i in range(POPULATION_SIZE):
             self.particles.append(Particle(i))
         # set first as initial best
@@ -105,33 +103,17 @@ class Swarm:
 
     def compare_lbest(self, particle, p, n):
         ''' Compare particle value to neighboring particles '''
-        local_best = particle.lbest
-        if particle.fitness < local_best.fitness:
-            local_best = particle
-        elif p.fitness < local_best.fitness:
-            local_best = p
-        elif n.fitness < local_best.fitness:
-            local_best = n
-        particle.lbest = local_best
+        best_fit = min([particle.fitness, p.fitness, n.fitness])
+        lbest = [x for x in [particle, p, n] if x.fitness == best_fit]
+        return lbest.pop()
 
     def print_gen(self, index, mode, file):
         ''' prints out the necessary info for a generation '''
-        if mode == 'global':
-            print('\nRESULT\n', '-'*7, file=file)
-            print('iterations      : ', index, file=file)
-            print(mode + ' fitness   : ', str(round(self.gbest.fitness, 3)), file=file)
-            print(mode + ' X         : ', str(self.gbest.position[0]), file=file)
-            print(mode + ' Y         : ', str(self.gbest.position[1]), file=file)
-        else:
-            min_l = Particle(-1)
-            for par in self.particles:
-                if par.lbest.fitness < min_l.lbest.fitness:
-                    min_l = par
-            print('\nRESULT\n', '-'*7, file=file)
-            print(mode + ' fitness   : ', str(round(min_l.fitness, 3)), file=file)
-            print(mode + ' X    : ', str(min_l.position[0]), file=file)
-            print(mode + ' Y    : ', str(min_l.position[1]), file=file)
-            print('iterations      : ', index, file=file)
+        print('\nRESULT\n', '-'*7, file=file)
+        print('iterations      : ', index, file=file)
+        print(mode + ' fitness   : ', str(round(self.gbest.fitness, 3)), file=file)
+        print(mode + ' X         : ', str(self.gbest.position[0]), file=file)
+        print(mode + ' Y         : ', str(self.gbest.position[1]), file=file)
 
 
 def PSO_global(mode):
@@ -141,7 +123,6 @@ def PSO_global(mode):
     # 1 initialize a swarm of particles
     swarm = Swarm()
     frames = []
-    v_kohde = None
     i = 0
     while (i < ITERATIONS):
         for particle in swarm.particles:
@@ -154,7 +135,6 @@ def PSO_global(mode):
             # 6 .. and position for particles
             particle.move()
         i += 1
-
         # *-* EXTRA *-* #
         # make a snapshot for visualisation, every n gens
         if i % 20 == 0:
@@ -162,7 +142,7 @@ def PSO_global(mode):
         # print defined levels of iteration
         if i == 100 or i == ITERATIONS:
             with open('result.dat', 'a') as f:
-                swarm.print_gen(i, 'local', f)
+                swarm.print_gen(i, 'global', f)
     return frames
 
 
@@ -173,7 +153,6 @@ def PSO_local(mode):
     # 1 initialize a swarm of particles
     swarm = Swarm()
     frames = []
-    v_kohde = None
     i = 0
     while (i < ITERATIONS):
         for particle in swarm.particles:
@@ -183,7 +162,10 @@ def PSO_local(mode):
             if i != 0 and i < len(swarm.particles) - 1:
                 prev = swarm.particles[i - 1]
                 next = swarm.particles[i + 1]
-                swarm.compare_lbest(particle, prev, next)
+                lbest = swarm.compare_lbest(particle, prev, next)
+                prev.lbest = lbest
+                next.lbest = lbest
+                particle.lbest = lbest
             # 5 update velocity ..
             particle.update_velocity(particle.lbest)
             # 6 .. and position for particles
@@ -191,7 +173,7 @@ def PSO_local(mode):
         i += 1
 
         # *-* EXTRA *-* #
-        # make a snapshot for visualisation, every n gens
+        # make a snapshot for visualisation, every 20 gens
         if i % 20 == 0:
             frames.append(make_frame(swarm))
         # print defined levels of iteration
@@ -256,6 +238,7 @@ def main():
     # visualisation
     if drawing:
         animate(frames2, mode)
+
 
 ##############################################################################
 
