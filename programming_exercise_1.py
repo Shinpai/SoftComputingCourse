@@ -97,16 +97,6 @@ class Population:
         ind.gene[0] = mutated
         return ind
 
-    def flip_bins(self, gene):
-        ''' Flips random bits from a bit string '''
-        bin_arr = [int(digit, 2) for digit in gene]
-        for digit in bin_arr:
-            if rng.random() > 0.5:
-                if digit is 0:
-                    digit = 1
-                digit = 0
-        return ''.join([str(d) for d in bin_arr])
-
     def print_gen(self):
         ''' Prints info of a population '''
         print('- Current generation -')
