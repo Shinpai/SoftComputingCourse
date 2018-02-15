@@ -6,7 +6,8 @@ import math
 from matplotlib import pyplot as plt
 
 # @author Harri Juutilainen 02/2018
-# OOP version PSO // not complete
+# OOP version PSO 
+# working w/o printing for local
 
 # Given parameters
 POPULATION_SIZE = 20
@@ -127,11 +128,12 @@ def PSO_global(mode):
     while (i < ITERATIONS):
         for particle in swarm.particles:
             # 2,3 Evaluate particle fitness and compare to pb
-            particle.fitness = particle.evaluate(particle.position[0], particle.position[1])
+            particle.fitness = particle.evaluate(particle.position[0],
+                                                 particle.position[1])
             particle.compare_pbest()
             # 4 compare value to global/local best value
+            swarm.compare_gbest(particle)
             if mode == 'global':
-                swarm.compare_gbest(particle)
                 kohde = swarm.gbest
             elif mode == 'local':
                 indeksi = swarm.particles.index(particle)
