@@ -14,7 +14,8 @@ ACC_CONST = 2  # learning factor
 VMAX = 3
 BOUNDS = [(-1, 2), (-1, 1)]
 DIM = 2  # two variables
-ITERATIONS = 10
+ITERATIONS = 2000
+frames = []
 
 
 class Particle:
@@ -28,15 +29,13 @@ class Particle:
         self.pbest = self
         self.lbest = self
 
-    def evaluate(self):
+    def evaluate(self, x, y):
         '''
         Function to optimize (minimize),
         particles fitness set as function value,
         compares particle to its personal best after eval
         '''
-        x = self.position[0]
-        y = self.position[1]
-        self.fitness = math.cos(x) * math.cos(y) - (x / (y ** 2 + 1))
+        return math.cos(x) * math.cos(y) - (x / (y ** 2 + 1))
 
     def compare_pbest(self):
         '''
@@ -57,14 +56,26 @@ class Particle:
 
     def move(self):
         ''' Update the position of a particle '''
+        vanha = [self.position[0], self.position[1]]
+
+        # calculate new position with restrictions
         for i in range(DIM):
             self.position[i] += self.velocity[i]
+            max_l = abs(BOUNDS[i][0] - BOUNDS[i][1])
+            if self.position[i] > BOUNDS[i][0]:
+                self.position[i] = BOUNDS[i][0] + (self.position[i] % max_l)
+            elif self.position[i] < BOUNDS[i][1]:
+                self.position[i] = BOUNDS[i][1] - (self.position[i] % max_l)
 
-            max_len = abs(BOUNDS[i][0] - BOUNDS[i][1])
-            if self.position[i] < BOUNDS[i][0]:
-                self.position[i] = BOUNDS[i][0] + (self.position[i] % max_len)
-            elif self.position[i] > BOUNDS[i][1]:
-                self.position[i] = BOUNDS[i][1] - (self.position[i] % max_len)
+        uusi = [self.position[0], self.position[1]]
+
+        vanha_f = self.evaluate(vanha[0], vanha[1])
+        uusi_f = self.evaluate(uusi[0], uusi[1])
+        # check if old pos is better than new
+        if vanha_f < uusi_f:
+            self.position = vanha
+        else:
+            self.position = uusi
 
     def print_par(self):
         ''' Print info of a particle '''
@@ -110,7 +121,7 @@ def PSO_global(mode):
     while (i < ITERATIONS):
         for particle in swarm.particles:
             # 2,3 Evaluate particle fitness and compare to pb
-            particle.evaluate()
+            particle.fitness = particle.evaluate(particle.position[0], particle.position[1])
             particle.compare_pbest()
             # 4 compare value to global best value
             swarm.compare_gbest(particle)
@@ -118,11 +129,14 @@ def PSO_global(mode):
             particle.update_velocity(swarm.gbest)
             # 6 .. and position for particle
             particle.move()
-        i += 1
         # print defined levels of iteration
-        if i == 100 or i == ITERATIONS:
+        # if i == 100 or i == ITERATIONS:
+        if i % 100 == 0:
             with open('result.dat', 'a') as f:
                 swarm.print_gen(i, 'global', f)
+        if i % 20 == 0:
+            frames.append(make_frame(swarm))
+        i += 1
 
 
 def clear():
@@ -137,6 +151,31 @@ def clear():
         print("\n" * 30)
 
 
+def animate(frames, mode):
+    # *-* EXTRA *-* #
+    ''' Animate snapshots of the swarm with plt '''
+    plt.ion()
+    index = 0
+    while index < len(frames):
+        frame = frames[index]
+        plt.title(str(index) + '/100, ' + mode)
+        # draw particles - red
+        plt.plot(frame[0], frame[1], 'ro')
+        plt.axis([-1.5, 2.5, -1.5, 1.5])
+        plt.pause(0.01)
+        plt.clf()
+        index += 1
+
+
+def make_frame(swarm):
+    # *-* EXTRA *-* #
+    ''' Create a snapshot of swarm particle positions '''
+    x = [par.position[0] for par in swarm.particles]
+    y = [par.position[1] for par in swarm.particles]
+    frame = (x, y)
+    return frame
+
+
 def main():
     clear()
     # clear result file
@@ -145,6 +184,8 @@ def main():
     # global
     mode = 'global'
     PSO_global(mode)
+    # visualization
+    animate(frames, 'global')
 
 ##############################################################################
 
