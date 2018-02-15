@@ -130,10 +130,6 @@ def PSO_global(mode):
             else:
                 particle = new
         i += 1
-        # *-* EXTRA *-* #
-        # make a snapshot for visualisation, every n gens
-        if i % 20 == 0:
-            frames.append(make_frame(swarm))
         # print defined levels of iteration
         if i == 100 or i == ITERATIONS:
             with open('result.dat', 'a') as f:
@@ -166,25 +162,10 @@ def PSO_local(mode):
             # 6 .. and position for particles
             particle.move()
         i += 1
-
-        # *-* EXTRA *-* #
-        # make a snapshot for visualisation, every 20 gens
-        if i % 20 == 0:
-            frames.append(make_frame(swarm))
         # print defined levels of iteration
         if i == 100 or i == ITERATIONS:
             with open('result.dat', 'a') as f:
                 swarm.print_gen(i, 'local', f)
-    return frames
-
-
-def make_frame(swarm):
-    # *-* EXTRA *-* #
-    ''' Create a snapshot of swarm particle positions '''
-    x = [par.position[0] for par in swarm.particles]
-    y = [par.position[1] for par in swarm.particles]
-    frame = (x, y)
-    return frame
 
 
 def clear():
@@ -199,40 +180,17 @@ def clear():
         print("\n" * 30)
 
 
-def animate(frames, mode):
-    # *-* EXTRA *-* #
-    ''' Animate snapshots of the swarm with plt '''
-    plt.ion()
-    index = 0
-    while index < len(frames):
-        frame = frames[index]
-        plt.title(str(index) + '/100, ' + mode)
-        # draw particles - red
-        plt.plot(frame[0], frame[1], 'ro')
-        plt.axis([-1.5, 2.5, -1.5, 1.5])
-        plt.pause(0.01)
-        plt.clf()
-        index += 1
-
-
 def main():
     clear()
-    drawing = False
     # clear result file
     with open('result.dat', 'w') as f:
         f.write('')
     # global
     mode = 'global'
-    frames = PSO_global(mode)
-    # visualisation
-    if drawing:
-        animate(frames, mode)
+    PSO_global(mode)
     # local
     mode = 'local'
-    frames2 = PSO_local(mode)
-    # visualisation
-    if drawing:
-        animate(frames2, mode)
+    PSO_local(mode)
 
 
 ##############################################################################
