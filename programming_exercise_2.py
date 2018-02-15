@@ -6,6 +6,7 @@ import math
 from matplotlib import pyplot as plt
 
 # @author Harri Juutilainen 02/2018
+# OOP version PSO // not complete
 
 # Given parameters
 POPULATION_SIZE = 20
@@ -55,38 +56,26 @@ class Particle:
             p_2 = ACC_CONST * rng.random() * (self.pbest.position[i] - self.position[i])
             # accelerate towards local or global best
             p_3 = ACC_CONST * rng.random() * (v_kohde.position[i] - self.position[i])
-
             self.velocity[i] = p_1 + p_2 + p_3
-            if self.velocity[i] > VMAX:
-                self.velocity[i] = VMAX
 
     def move(self):
         ''' Update the position of a particle '''
         for i in range(DIM):
-            self.position[i] = self.position[i] + self.velocity[i]
-            # constraints for movement
-            # BOUNDS = [(-1, 2), (-1, 1)]
-            max_l = abs(BOUNDS[i][1] - BOUNDS[i][0])
-            if self.position[i] > BOUNDS[i][1]:
-                self.position[i] = BOUNDS[i][1] - (self.position[i] % max_l)
-            elif self.position[i] < BOUNDS[i][0]:
-                self.position[i] = BOUNDS[i][0] + (self.position[i] % max_l)
+            self.position[i] += self.velocity[i]
 
     def print_par(self):
         ''' Print info of a particle '''
-        print('\nParticle #' + str(self.index) +
-              '\n** (x, y) = ' + str(round(self.position[0], 3)) +
-              ',' + str(round(self.position[1], 3)) +
-              '\n** Velocity x = ' + str(round(self.velocity[0], 3)) +
-              '\n** Velocity y = ' + str(round(self.velocity[1], 3)) +
-              '\n** Current value = ' + str(round(self.fitness, 3)))
+        print("#{}\n({},{})\n({},{})\n{}".format(
+            self.index, round(self.position[0], 3),
+            round(self.position[1], 3), round(self.velocity[0], 3),
+            round(self.velocity[1], 3), round(self.fitness, 3)
+        ))
 
 
 class Swarm:
     ''' Set of Particles '''
     def __init__(self):
         self.particles = []
-        self.gbest = None
         self.initialize_swarm()
 
     def initialize_swarm(self):
@@ -109,11 +98,10 @@ class Swarm:
 
     def print_gen(self, index, mode, file):
         ''' prints out the necessary info for a generation '''
-        print('\nRESULT\n', '-'*7, file=file)
-        print('iterations      : ', index, file=file)
-        print(mode + ' fitness   : ', str(round(self.gbest.fitness, 3)), file=file)
-        print(mode + ' X         : ', str(self.gbest.position[0]), file=file)
-        print(mode + ' Y         : ', str(self.gbest.position[1]), file=file)
+        print("ITERS:{}\n* gbest {} \n* ({},{})\n".format(
+            index, round(self.gbest.fitness, 3),
+            self.gbest.position[0], self.gbest.position[1]
+        ), file=file)
 
 
 def PSO_global(mode):
@@ -128,12 +116,19 @@ def PSO_global(mode):
         for particle in swarm.particles:
             # 2,3 Evaluate particle fitness and compare to pb
             particle.evaluate()
-            # 4 compare value to global best value ..
+            # 4 compare value to global best value
             swarm.compare_gbest(particle)
+            old = particle
             # 5 update velocity ..
             particle.update_velocity(swarm.gbest)
             # 6 .. and position for particles
             particle.move()
+            particle.evaluate()
+            new = particle
+            if old.fitness < new.fitness:
+                particle = old
+            else:
+                particle = new
         i += 1
         # *-* EXTRA *-* #
         # make a snapshot for visualisation, every n gens
@@ -222,18 +217,18 @@ def animate(frames, mode):
 
 def main():
     clear()
-    drawing = True
-
+    drawing = False
+    # clear result file
+    with open('result.dat', 'w') as f:
+        f.write('')
     # global
     mode = 'global'
     frames = PSO_global(mode)
     # visualisation
     if drawing:
         animate(frames, mode)
-
     # local
     mode = 'local'
-    # using a copy of the same initial swarm
     frames2 = PSO_local(mode)
     # visualisation
     if drawing:

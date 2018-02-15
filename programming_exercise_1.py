@@ -4,6 +4,7 @@ import random as rng
 import os
 
 # @author Harri Juutilainen 01/2018
+# more OOP version of GA // not complete
 
 # Given parameters
 LOWER_BOUND = 1.0
@@ -159,9 +160,7 @@ def run_ga():
         print('Individuals ' + str(len(pop.individuals)) +
               ', Crossovers ' + str(pop.crossovers) +
               ', Mutations ' + str(pop.mutations))
-    print(str(pop.funktio(5, 3)))
-    print(str(pop.funktio(5, 5)))
-    print(str(pop.funktio(5, 1)))
+    pop.print_gen()
 
 
 def main():
