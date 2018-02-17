@@ -30,10 +30,11 @@ class Individual:
 
     def print_chr(self):
         ''' Print info of an Individual '''
-        
-        print('#' + str(self.num))
-        print("Func value : {}".format(self.function_value, '.2f'))
-        print(' -- ('.format(self.x_1, '.2f')+ ',' + ''.format(self.x_2, '.2f') + ')')
+        with open('GA_result.dat', 'a') as f:
+            print('#' + str(self.num) + ' Func value : ' +
+                  str(format(self.function_value, '.2f')) +
+                  str(' -- (' + format(self.x_1, '.2f') + ',' +
+                  format(self.x_2, '.2f')) + ')', file=f)
 
 
 class Population:
@@ -100,10 +101,8 @@ class Population:
 
     def print_gen(self):
         ''' Prints info of a population '''
-        print('- Current generation -')
         for c in self.individuals:
             c.print_chr()
-        print()
 
 
 def clear():
@@ -123,10 +122,6 @@ def run_ga():
     pop.initialize_population()
     pop.print_gen()
     for generation in range(ITERATIONS):
-        if DEBUG:
-            input('Press enter for next...')
-        print('\nGENERATION %s' % (generation))
-        print('-'*30)
         pop.evaluate()
         next_population = Population()
         while len(next_population.individuals) < len(pop.individuals):
@@ -148,14 +143,12 @@ def run_ga():
         # choose the top 10 individuals for the next population
         pop.individuals = next_population.individuals[:10]
         pop.evaluate()
-        print('Individuals ' + str(len(pop.individuals)) +
-              ', Crossovers ' + str(pop.crossovers) +
-              ', Mutations ' + str(pop.mutations))
-    pop.print_gen()
+        pop.print_gen()
 
 
 def main():
     clear()
+    open('GA_result.dat', 'w').close()
     run_ga()
     exit(0)
 
