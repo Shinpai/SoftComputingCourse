@@ -155,7 +155,7 @@ def PSO_global(mode):
         # if i == 100 or i == ITERATIONS:
         if i == 100 or i == ITERATIONS:
             with open('result.dat', 'a') as f:
-                swarm.print_gen(i, 'global', f)
+                swarm.print_gen(i, mode, f)
         if i % 20 == 0:
             frames.append(make_frame(swarm))
         i += 1

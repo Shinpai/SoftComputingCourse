@@ -30,9 +30,10 @@ class Individual:
 
     def print_chr(self):
         ''' Print info of an Individual '''
-        print('#' + str(self.num) + ' Func value : ' +
-                    str(format(self.function_value, '.2f')) +
-                    str(' -- (' + format(self.x_1, '.2f') + ',' + format(self.x_2, '.2f')) + ')')
+        
+        print('#' + str(self.num))
+        print("Func value : {}".format(self.function_value, '.2f'))
+        print(' -- ('.format(self.x_1, '.2f')+ ',' + ''.format(self.x_2, '.2f') + ')')
 
 
 class Population:
