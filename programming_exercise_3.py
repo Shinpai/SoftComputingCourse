@@ -21,6 +21,9 @@ class Individual:
         self.y = rng.uniform(0, 15)
 
     def constraints(self):
+        '''
+        RETURNS: [bool, int]
+        '''
         x = self.x
         y = self.y
 
@@ -31,13 +34,13 @@ class Individual:
 
         def f2(x, y):
             return y + (x - 12 / 1.2)
-        
+
         satisfied = 0
         if f1(x, y) <= 0:
             satisfied += 1
         if f2(x, y) <= 0:
             satisfied += 1
-        
+
         if satisfied > 0:
             return [True, satisfied]
         else:
@@ -100,7 +103,9 @@ class Population:
                 self.fittest = ind
 
     def tournament_select(self):
-        '''  '''
+        '''
+        RETURNS: Individual-object
+        '''
         pool = self.individuals[:]
         pool = sorted(pool, key=lambda x: x.fitness)
         return pool.pop()
@@ -113,7 +118,19 @@ class Population:
         else:
             return (1 / (2 * (1 - rand))) ** (1 / n + 1)
 
+    def mutate(self, target):
+        '''
+        RETURNS: Individual-object
+        '''
+        target.x = rng.uniform(-5, 10)
+        target.y = rng.uniform(0, 15)
+        target.fitness = self.f(target.x, target.y)
+        return target
+
     def rc_crossover(self, par1, par2):
+        '''
+        RETURNS: list with two Individuals
+        '''
         prob = self.BQI_prob()
         self.size += 1
         c_1 = Individual(self.size)
@@ -125,6 +142,9 @@ class Population:
         return [c_1, c_2]
 
     def f(self, x, y):
+        '''
+        RETURNS: float
+        '''
         return x + y
 
     def print_gen(self):
@@ -139,12 +159,13 @@ def RCGA(mode):
     pop = Population()
     pop.initialize_population()
     pop.fittest = pop.individuals[0]
-
     for generation in range(ITER):
         pop.evaluate(mode, generation)
         next_population = Population()
+
         while len(next_population.individuals) < len(pop.individuals):
             parent1 = pop.tournament_select()
+            # CROSSOVER
             if rng.random() < PROB_CROSSOVER:
                 parent2 = pop.tournament_select()
                 child1, child2 = pop.rc_crossover(parent1, parent2)
@@ -152,12 +173,12 @@ def RCGA(mode):
                 next_population.individuals.append(child2)
             else:
                 next_population.individuals.append(parent1)
-            '''
+            # MUTATION
             if rng.random() < PROB_MUTATION:
                 target = next_population.tournament_select()
                 mutated = pop.mutate(target)
                 next_population.individuals.append(mutated)
-            '''
+
         next_population.evaluate(mode, generation)
         next_population.individuals = sorted(next_population.individuals, key=lambda x: x.fitness)
         # choose the top 10 individuals for the next population
