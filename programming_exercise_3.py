@@ -13,7 +13,9 @@ KURI_CONST = 10 ** 9
 
 
 class Individual:
-    ''' Individual '''
+    '''
+    Individual-object
+    '''
     def __init__(self, num):
         self.num = num
         self.fitness = None
@@ -29,7 +31,7 @@ class Individual:
 
         def f1(x, y):
             p1 = (y - ((5.1 * x ** 2) / (4 * PI ** 2)) + ((5 * x) / PI) - 6)
-            p2 = (10 - (10 / 8 * PI)) * math.cos(x) + 9
+            p2 = ((10 - (10 / 8 * PI)) * math.cos(x)) + 9
             return p1 ** 2 + p2
 
         def f2(x, y):
@@ -47,7 +49,9 @@ class Individual:
             return [False, 0]
 
     def print_chr(self, gen):
-        ''' Print info of an Individual '''
+        '''
+        Print info of an Individual-object
+        '''
         with open('RCGA_result.dat', 'a') as f:
             print("GEN #{} - fit {}\n ({}, {})\n".format(gen, self.fitness,
                                                          self.x, self.y), file=f)
@@ -63,7 +67,9 @@ class Population:
         self.size = 0
 
     def initialize_population(self):
-        ''' Initializes a population with size '''
+        '''
+        Initializes a population of individuals
+        '''
         for i in range(POPULATION_SIZE):
             self.individuals.append(Individual(i))
         self.size = len(self.individuals)
@@ -71,7 +77,8 @@ class Population:
     def evaluate(self, mode, generation):
         '''
         Calculates fitness for individuals,
-        does constraint handling
+        does 3 types of constraint handling
+        depending on mode given to RCGA()
         '''
         for ind in self.individuals:
 
@@ -82,7 +89,7 @@ class Population:
                 C = .5
                 a = 2
                 b = 2
-                SVC = 0
+                SVC = 0  # TODO
                 result = ind.fitness + (C * gen) ** a * SVC
                 return result
 
@@ -156,6 +163,15 @@ class Population:
 
 
 def RCGA(mode):
+    '''
+    Minimizes function with given mode as a
+    constraint handling method. 1k iterations.
+    * 'dp' = Death penalty
+    * 'static' = Kuri's static penalty
+    * 'dynamic' = Joine's and Houck's dynamic penalty
+
+    Prints info of every 200 generations in 'RCGA_result.dat'
+    '''
     pop = Population()
     pop.initialize_population()
     pop.fittest = pop.individuals[0]
@@ -173,7 +189,7 @@ def RCGA(mode):
                 next_population.individuals.append(child2)
             else:
                 next_population.individuals.append(parent1)
-            # MUTATION
+            # MUTATION TODO
             if rng.random() < PROB_MUTATION:
                 target = next_population.tournament_select()
                 mutated = pop.mutate(target)
