@@ -25,7 +25,9 @@ class Individual:
         y = self.y
 
         def f1(x, y):
-            return (y - ((5.1 * x ** 2) / (4 * PI ** 2)) + ((5 * x) / PI) - 6) ** 2 + (10 - (10 / 8 * PI)) * math.cos(x) ** 2 + 9
+            p1 = (y - ((5.1 * x ** 2) / (4 * PI ** 2)) + ((5 * x) / PI) - 6)
+            p2 = (10 - (10 / 8 * PI)) * math.cos(x) + 9
+            return p1 ** 2 + p2
 
         def f2(x, y):
             return y + (x - 12 / 1.2)
