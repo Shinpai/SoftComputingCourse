@@ -41,11 +41,11 @@ class Individual:
         else:
             return [False, 0]
 
-    def print_chr(self):
+    def print_chr(self, gen):
         ''' Print info of an Individual '''
         with open('RCGA_result.dat', 'a') as f:
-            print("#{} - fit {}\n ({}, {})\n".format(self.num, self.fitness,
-                                                     self.x, self.y), file=f)
+            print("GEN #{} - fit {}\n ({}, {})\n".format(gen, self.fitness,
+                                                         self.x, self.y), file=f)
 
 
 class Population:
@@ -64,20 +64,33 @@ class Population:
         self.size = len(self.individuals)
 
     def evaluate(self, mode, generation):
+        '''
+        Calculates fitness for individuals,
+        does constraint handling
+        '''
         for ind in self.individuals:
+
+            def KURI(satisfied):
+                return KURI_CONST - sum([KURI_CONST / 2 for _ in range(satisfied)])
+
+            def JOINESHOUCK(ind, gen):
+                C = .5
+                a = 2
+                b = 2
+                SVC = 0
+                result = ind.fitness + (C * gen) ** a * SVC
+                return result
+
             ind.fitness = self.f(ind.x, ind.y)
             passed, satisfied = ind.constraints()
             if passed:
-                pass
+                continue
             elif mode == 'dp':
                 ind.fitness = 0
             elif mode == 'static':
-                ind.fitness = KURI_CONST - sum([KURI_CONST / 2 for _ in range(satisfied)])
+                ind.fitness = KURI(satisfied)
             elif mode == 'dynamic':
-                C = .5
-                a = 1
-                b = 2
-                ind.fitness = ind.fitness + (C * generation) ** a * SVC(b, ind)
+                ind.fitness = JOINESHOUCK(ind, generation)
 
     def find_fittest(self):
         for ind in self.individuals:
@@ -116,8 +129,8 @@ class Population:
         for ind in self.individuals:
             ind.print_chr()
 
-    def print_fittest(self):
-        self.fittest.print_chr()
+    def print_fittest(self, gen):
+        self.fittest.print_chr(gen)
 
 
 def RCGA(mode):
@@ -148,8 +161,8 @@ def RCGA(mode):
         # choose the top 10 individuals for the next population
         pop.individuals = next_population.individuals[:10]
         pop.find_fittest()
-        if generation % 100 == 0:
-            pop.print_fittest()
+        if generation % 200 == 0:
+            pop.print_fittest(generation)
 
 
 def clear():
@@ -176,6 +189,12 @@ def main():
     RCGA(mode)
 
     mode = 'static'
+    with open('RCGA_result.dat', 'a') as f:
+        print(mode.upper(), file=f)
+        print('#'*30, file=f)
+    RCGA(mode)
+
+    mode = 'dynamic'
     with open('RCGA_result.dat', 'a') as f:
         print(mode.upper(), file=f)
         print('#'*30, file=f)
