@@ -4,6 +4,7 @@ import random as rng
 import os
 import math
 from matplotlib import pyplot as plt
+import matplotlib.animation as animation
 
 # @author Harri Juutilainen 02/2018
 # OOP version PSO 
@@ -17,6 +18,9 @@ BOUNDS = [(-1, 2), (-1, 1)]
 DIM = 2  # two variables
 ITERATIONS = 2000
 frames = []
+
+fig, ax = plt.subplots()
+ln, = plt.plot([], [], 'ro')
 
 
 class Particle:
@@ -157,7 +161,7 @@ def PSO_global(mode):
             with open('PSO_result.dat', 'a') as f:
                 swarm.print_gen(i, mode, f)
         if i % 20 == 0:
-            frames.append(make_frame(swarm))
+            make_frame(swarm, mode)
         i += 1
 
 
@@ -173,30 +177,30 @@ def clear():
         print("\n" * 30)
 
 
-def animate(frames, mode):
-    # *-* EXTRA *-* #
-    ''' Animate snapshots of the swarm with plt '''
-    plt.ion()
-    index = 0
-    while index < len(frames):
-        frame = frames[index]
-        plt.title(str(index) + '/100, ' + mode)
-        # draw particles - red
-        plt.plot(frame[0], frame[1], 'ro')
-        plt.axis([-1.5, 2.5, -1.5, 1.5])
-        plt.pause(0.01)
-        plt.clf()
-        index += 1
-    frames.clear()
-
-
-def make_frame(swarm):
+def make_frame(swarm, mode):
     # *-* EXTRA *-* #
     ''' Create a snapshot of swarm particle positions '''
     x = [par.position[0] for par in swarm.particles]
     y = [par.position[1] for par in swarm.particles]
-    frame = (x, y)
-    return frame
+    frame = [x, y, mode]
+    frames.append(frame)
+
+
+def init():
+    ax.set_xlim(-2, 3)
+    ax.set_ylim(-2, 2)
+    return ln,
+
+
+def update(counter):
+    if counter == len(frames) - 1:
+        exit(0)
+    counter += 1
+    x = frames[counter][0]
+    y = frames[counter][1]
+    plt.title(frames[counter][2])
+    ln.set_data(x, y)
+    return ln,
 
 
 def main():
@@ -204,14 +208,13 @@ def main():
     # clear result file
     open('PSO_result.dat', 'w').close()
     # global
-    mode = 'global'
-    PSO_global(mode)
-    # visualization
-    animate(frames, mode)
+    PSO_global('global')
     # local
-    mode = 'local'
-    PSO_global(mode)
-    animate(frames, mode)
+    PSO_global('local')
+
+    ani = animation.FuncAnimation(fig, update, init_func=init, frames=len(frames), interval=60, repeat=True)
+    ani.save('pso.mp4')
+    plt.show()
 
 ##############################################################################
 
