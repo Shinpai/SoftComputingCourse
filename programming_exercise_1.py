@@ -4,7 +4,7 @@ import random as rng
 import os
 
 # @author Harri Juutilainen 01/2018
-# more OOP version of GA // not complete
+# more OOP version of GA
 
 # Given parameters
 LOWER_BOUND = 1.0

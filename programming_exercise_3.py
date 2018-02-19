@@ -4,6 +4,9 @@ import random as rng
 import os
 import math
 
+# @author Harri Juutilainen 02/2018
+# Real-coded GA with 3 different constraint handling methods
+
 PI = math.pi
 PROB_CROSSOVER = 0.8
 PROB_MUTATION = 0.06
@@ -23,6 +26,8 @@ class Individual:
 
     def constraints(self):
         '''
+        Checks if constraints are met by the Individual
+        returns the amount of satisfied constraints.
         RETURNS: [bool, int]
         '''
         x = self.x
@@ -41,6 +46,7 @@ class Individual:
 
     def f1(self, x, y):
         '''
+        Function for subjecting to constraints
         RETURNS: float
         '''
         p1 = (y - ((5.1 * x ** 2) / (4 * PI ** 2)) + ((5 * x) / PI) - 6)
@@ -49,6 +55,7 @@ class Individual:
 
     def f2(self, x, y):
         '''
+        Function for subjecting to constraints
         RETURNS: float
         '''
         return y + (x - 12 / 1.2)
@@ -86,11 +93,18 @@ class Population:
         depending on mode given to RCGA()
         '''
         for ind in self.individuals:
-            # apufunktiot
             def KURI(satisfied):
+                '''
+                Helper function for static constraint
+                RETURNS: float
+                '''
                 return KURI_CONST - sum([KURI_CONST / 2 for _ in range(satisfied)])
 
             def JOINESHOUCK(ind, gen):
+                '''
+                Helper function for dynamic constraint
+                RETURNS: float
+                '''
                 C = .5
                 a = 2
                 b = 2
@@ -113,12 +127,18 @@ class Population:
                 ind.fitness = JOINESHOUCK(ind, generation)
 
     def find_fittest(self):
+        '''
+        Sets the Individual-object in population
+        with the best fitness as the fittest of the
+        population.
+        '''
         for ind in self.individuals:
             if ind.fitness < self.fittest.fitness:
                 self.fittest = ind
 
     def tournament_select(self):
         '''
+        Returns the Individual in population with the best fitness
         RETURNS: Individual-object
         '''
         pool = self.individuals[:]
@@ -127,6 +147,8 @@ class Population:
 
     def BQI_prob(self):
         '''
+        Calculates distributed probability for the crossover
+        operation.
         RETURNS: float
         '''
         rand = rng.random()
@@ -138,6 +160,7 @@ class Population:
 
     def mutate(self, target):
         '''
+        Randomizes the x and y of an Individual
         RETURNS: Individual-object
         '''
         target.x = rng.uniform(-5, 10)
@@ -147,6 +170,8 @@ class Population:
 
     def rc_crossover(self, par1, par2):
         '''
+        Calculates children from two float according to
+        distributed probability.
         RETURNS: list
         '''
         prob = self.BQI_prob()
@@ -161,15 +186,22 @@ class Population:
 
     def f(self, x, y):
         '''
+        Function that is minimized
         RETURNS: float
         '''
         return x + y
 
     def print_gen(self):
+        '''
+        Prints the current generation of objects.
+        '''
         for ind in self.individuals:
             ind.print_chr()
 
     def print_fittest(self, gen):
+        '''
+        Prints the fittest object in the population.
+        '''
         self.fittest.print_chr(gen)
 
 
