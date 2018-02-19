@@ -120,7 +120,7 @@ class Population:
             if passed:
                 continue
             elif mode == 'dp':
-                ind.fitness = 0
+                ind.fitness = 0  # TODO rekursiivinen strategia
             elif mode == 'static':
                 ind.fitness = KURI(satisfied)
             elif mode == 'dynamic':
