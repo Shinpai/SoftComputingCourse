@@ -5,7 +5,6 @@ import os
 import math
 
 PI = math.pi
-ITER = 1000
 PROB_CROSSOVER = 0.8
 PROB_MUTATION = 0.06
 POPULATION_SIZE = 10
@@ -29,24 +28,30 @@ class Individual:
         x = self.x
         y = self.y
 
-        def f1(x, y):
-            p1 = (y - ((5.1 * x ** 2) / (4 * PI ** 2)) + ((5 * x) / PI) - 6)
-            p2 = ((10 - (10 / 8 * PI)) * math.cos(x)) + 9
-            return p1 ** 2 + p2
-
-        def f2(x, y):
-            return y + (x - 12 / 1.2)
-
         satisfied = 0
-        if f1(x, y) <= 0:
+        if self.f1(x, y) <= 0:
             satisfied += 1
-        if f2(x, y) <= 0:
+        if self.f2(x, y) <= 0:
             satisfied += 1
 
         if satisfied > 0:
             return [True, satisfied]
         else:
             return [False, 0]
+
+    def f1(self, x, y):
+        '''
+        RETURNS: float
+        '''
+        p1 = (y - ((5.1 * x ** 2) / (4 * PI ** 2)) + ((5 * x) / PI) - 6)
+        p2 = ((10 - (10 / 8 * PI)) * math.cos(x)) + 9
+        return p1 ** 2 + p2
+
+    def f2(self, x, y):
+        '''
+        RETURNS: float
+        '''
+        return y + (x - 12 / 1.2)
 
     def print_chr(self, gen):
         '''
@@ -81,7 +86,7 @@ class Population:
         depending on mode given to RCGA()
         '''
         for ind in self.individuals:
-
+            # apufunktiot
             def KURI(satisfied):
                 return KURI_CONST - sum([KURI_CONST / 2 for _ in range(satisfied)])
 
@@ -89,7 +94,10 @@ class Population:
                 C = .5
                 a = 2
                 b = 2
-                SVC = 0  # TODO
+                C_1 = 0 if ind.f1(ind.x, ind.y) <= 0 else abs(ind.f1(ind.x, ind.y))
+                C_2 = 0 if ind.f2(ind.x, ind.y) <= 0 else abs(ind.f2(ind.x, ind.y))
+
+                SVC = C_1 + C_2
                 result = ind.fitness + (C * gen) ** a * SVC
                 return result
 
@@ -118,6 +126,9 @@ class Population:
         return pool.pop()
 
     def BQI_prob(self):
+        '''
+        RETURNS: float
+        '''
         rand = rng.random()
         n = 2  # distribution index
         if rand <= .5:
@@ -136,7 +147,7 @@ class Population:
 
     def rc_crossover(self, par1, par2):
         '''
-        RETURNS: list with two Individuals
+        RETURNS: list
         '''
         prob = self.BQI_prob()
         self.size += 1
@@ -162,10 +173,10 @@ class Population:
         self.fittest.print_chr(gen)
 
 
-def RCGA(mode):
+def RCGA(mode, epochs):
     '''
     Minimizes function with given mode as a
-    constraint handling method. 1k iterations.
+    constraint handling method.
     * 'dp' = Death penalty
     * 'static' = Kuri's static penalty
     * 'dynamic' = Joine's and Houck's dynamic penalty
@@ -175,33 +186,36 @@ def RCGA(mode):
     pop = Population()
     pop.initialize_population()
     pop.fittest = pop.individuals[0]
-    for generation in range(ITER):
+    for generation in range(epochs):
         pop.evaluate(mode, generation)
-        next_population = Population()
+        next_pop = Population()
 
-        while len(next_population.individuals) < len(pop.individuals):
+        while len(next_pop.individuals) < len(pop.individuals):
             parent1 = pop.tournament_select()
             # CROSSOVER
             if rng.random() < PROB_CROSSOVER:
                 parent2 = pop.tournament_select()
                 child1, child2 = pop.rc_crossover(parent1, parent2)
-                next_population.individuals.append(child1)
-                next_population.individuals.append(child2)
+                next_pop.individuals.append(child1)
+                next_pop.individuals.append(child2)
             else:
-                next_population.individuals.append(parent1)
-            # MUTATION TODO
+                next_pop.individuals.append(parent1)
+            # MUTATION
             if rng.random() < PROB_MUTATION:
-                target = next_population.tournament_select()
+                target = next_pop.tournament_select()
                 mutated = pop.mutate(target)
-                next_population.individuals.append(mutated)
+                next_pop.individuals.append(mutated)
 
-        next_population.evaluate(mode, generation)
-        next_population.individuals = sorted(next_population.individuals, key=lambda x: x.fitness)
-        # choose the top 10 individuals for the next population
-        pop.individuals = next_population.individuals[:10]
+        next_pop.evaluate(mode, generation)
+        # ELITIST STRATEGY - always keep fittest
         pop.find_fittest()
-        if generation % 200 == 0:
-            pop.print_fittest(generation)
+        next_pop.individuals.append(pop.fittest)
+
+        # choose the top 10 individuals for the next population
+        next_pop.individuals = sorted(next_pop.individuals, key=lambda x: x.fitness)
+        pop.individuals = next_pop.individuals[:10]
+
+    pop.print_fittest(generation)
 
 
 def clear():
@@ -220,24 +234,25 @@ def clear():
 def main():
     clear()
     open('RCGA_result.dat', 'w').close()
+    epochs = 1000
 
     mode = 'dp'
     with open('RCGA_result.dat', 'a') as f:
         print(mode.upper(), file=f)
         print('#'*30, file=f)
-    RCGA(mode)
+    RCGA(mode, epochs)
 
     mode = 'static'
     with open('RCGA_result.dat', 'a') as f:
         print(mode.upper(), file=f)
         print('#'*30, file=f)
-    RCGA(mode)
+    RCGA(mode, epochs)
 
     mode = 'dynamic'
     with open('RCGA_result.dat', 'a') as f:
         print(mode.upper(), file=f)
         print('#'*30, file=f)
-    RCGA(mode)
+    RCGA(mode, epochs)
 
 ##############################################################################
 
