@@ -186,6 +186,7 @@ def RCGA(mode, epochs):
     pop = Population()
     pop.initialize_population()
     pop.fittest = pop.individuals[0]
+
     for generation in range(epochs):
         pop.evaluate(mode, generation)
         next_pop = Population()
@@ -214,7 +215,6 @@ def RCGA(mode, epochs):
         # choose the top 10 individuals for the next population
         next_pop.individuals = sorted(next_pop.individuals, key=lambda x: x.fitness)
         pop.individuals = next_pop.individuals[:10]
-
     pop.print_fittest(generation)
 
 
@@ -234,24 +234,24 @@ def clear():
 def main():
     clear()
     open('RCGA_result.dat', 'w').close()
-    epochs = 1000
+    epochs = 2000
 
     mode = 'dp'
     with open('RCGA_result.dat', 'a') as f:
         print(mode.upper(), file=f)
-        print('#'*30, file=f)
+        print('-'*30, file=f)
     RCGA(mode, epochs)
 
     mode = 'static'
     with open('RCGA_result.dat', 'a') as f:
         print(mode.upper(), file=f)
-        print('#'*30, file=f)
+        print('-'*30, file=f)
     RCGA(mode, epochs)
 
     mode = 'dynamic'
     with open('RCGA_result.dat', 'a') as f:
         print(mode.upper(), file=f)
-        print('#'*30, file=f)
+        print('-'*30, file=f)
     RCGA(mode, epochs)
 
 ##############################################################################
