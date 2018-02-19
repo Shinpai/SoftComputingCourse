@@ -5,6 +5,6 @@
 
 #2 Particle swarm optimization in python
 
-![Output sample](SoftComputingCourse/pso.mp4)
+![Output sample](SoftComputingCourse/pso.gif)
 
 #3 Real-coded GA with 3 different methods of constraint handling // WIP
