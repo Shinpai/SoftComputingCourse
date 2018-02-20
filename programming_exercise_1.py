@@ -143,7 +143,7 @@ def run_ga():
         # choose the top 10 individuals for the next population
         pop.individuals = next_population.individuals[:10]
         pop.evaluate()
-        pop.print_gen()
+    pop.print_gen()
 
 
 def main():

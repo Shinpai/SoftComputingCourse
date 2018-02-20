@@ -213,7 +213,7 @@ def main():
     PSO_global('local')
 
     ani = animation.FuncAnimation(fig, update, init_func=init, frames=len(frames), interval=60, repeat=True)
-    ani.save('pso.mp4')
+    # ani.save('pso.mp4')
     plt.show()
 
 ##############################################################################
