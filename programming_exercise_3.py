@@ -95,14 +95,17 @@ class Population:
         for ind in self.individuals:
             def KURI(satisfied):
                 '''
-                Helper function for static constraint
+                Helper function for static constraint.
+                Uses a large static constant to calculate penalty
+                for all satisfied constraints.
                 RETURNS: float
                 '''
                 return KURI_CONST - sum([KURI_CONST / 2 for _ in range(satisfied)])
 
             def JOINESHOUCK(ind, gen):
                 '''
-                Helper function for dynamic constraint
+                Helper function for dynamic constraint. Uses the sum of inequality
+                and equality constraints to calculate a new dynamic penalty.
                 RETURNS: float
                 '''
                 C = .5
