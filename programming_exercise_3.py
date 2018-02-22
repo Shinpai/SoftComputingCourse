@@ -142,6 +142,7 @@ class Population:
     def tournament_select(self):
         '''
         Returns the Individual in population with the best fitness
+        TODO: this should have an element of randomness?
         RETURNS: Individual-object
         '''
         pool = self.individuals[:]
@@ -166,8 +167,11 @@ class Population:
         Randomizes the x and y of an Individual
         RETURNS: Individual-object
         '''
+        delta = [-.2, .2]
         target.x = rng.uniform(-5, 10)
         target.y = rng.uniform(0, 15)
+        target.x += rng.choice(delta)
+        target.y += rng.choice(delta)
         target.fitness = self.f(target.x, target.y)
         return target
 
@@ -223,6 +227,7 @@ def RCGA(mode, epochs):
     pop.fittest = pop.individuals[0]
 
     for generation in range(epochs):
+        # Constraint handling done in evaluation
         pop.evaluate(mode, generation)
         next_pop = Population()
 
