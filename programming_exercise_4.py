@@ -67,8 +67,8 @@ class Individual:
 
     def print_info(self):
         with open('NSGA_MOEAD_result.dat', 'a') as f:
-            print("Value {}, Rank {}, Domination count {}".format(
-                self.value, self.rank, self.domination_count
+            print("Value {}, Rank {},\nDomination count {}, Distance {}\n".format(
+                self.value, self.rank, self.domination_count, self.distance
                 ), file=f)
 
 
@@ -108,10 +108,11 @@ def crowding_dist(data, fronts):
     l = len(fronts)
     for ind in data:
         indeksi = data.index(ind)
-        if indeksi != 0 and indeksi < l:
-            n = data[indeksi + 1].value
-            p = data[indeksi - 1]. value
-            ind.distance = (ind.distance + (p - n)) / (7 - 0)
+        if indeksi != 0 and indeksi < len(data) - 1:
+            for i in range(2):
+                n = data[indeksi + 1].value[i]
+                p = data[indeksi - 1]. value[i]
+                ind.distance += (ind.distance + (p - n)) / (7 - 0)
 
 
 def partial_order(data):
@@ -145,14 +146,19 @@ def NSGA_II():
     for i in NSGA_values:
         data.append(Individual(i))
 
-    plot(data)
-
+    with open('NSGA_MOEAD_result.dat', 'a') as f:
+        print('\nAFTER NONDOMINATED SORTING:', file=f)
+        print('-'*30, file=f)
     fronts = nondom_sort(data)
+    for ind in fronts:
+        ind.print_info()
+
     crowding_dist(data, fronts)
     p_order = partial_order(data)
 
-    plot(data)
-
+    with open('NSGA_MOEAD_result.dat', 'a') as f:
+        print('\nSELECTED:', file=f)
+        print('-'*30, file=f)
     for ind in p_order[:6]:
         ind.print_info()
     # return/print top 6 individuals
