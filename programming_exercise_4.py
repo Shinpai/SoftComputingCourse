@@ -5,7 +5,9 @@ import os
 import math
 from matplotlib import pyplot as plt
 
-# @author Harri Juutilainen 03/2018
+# @author Harri Juutilainen 03/2018 // WIP
+# NSGA-II - nondominated sorting algorithm, crowding distance calc
+# MOEA-D - Tchebycheff fitness evaluation, weighted sum evaluation
 
 
 NSGA_values = [
@@ -58,13 +60,22 @@ class Individual:
     def __init__(self, val):
         self.value = val
         self.rank = 0
+        self.distance = 0
+        self.order = 0
         self.dominated = []
         self.domination_count = 0
+
+    def print_info(self):
+        with open('NSGA_MOEAD_result.dat', 'a') as f:
+            print("Value {}, Rank {}, Domination count {}".format(
+                self.value, self.rank, self.domination_count
+                ), file=f)
 
 
 def nondom_sort(data):
         '''
-        Fast nondominated sort
+        Fast nondominated sort, calculates rank and domination counts
+        for Individual objects
         '''
         # evaluate dominations
         fronts = []
@@ -90,10 +101,26 @@ def nondom_sort(data):
                         Q.append(q)
             i += 1
             fronts = Q
+        return fronts
 
 
-def crowding_dist(data):
-        pass
+def crowding_dist(data, fronts):
+    l = len(fronts)
+    for ind in data:
+        indeksi = data.index(ind)
+        if indeksi != 0 and indeksi < l:
+            n = data[indeksi + 1].value
+            p = data[indeksi - 1]. value
+            ind.distance = (ind.distance + (p - n)) / (7 - 0)
+
+
+def partial_order(data):
+    for i in data:
+        for j in data:
+            if i.rank < j.rank or (i.rank == j.rank and i.distance > j.distance):
+                i.order -= 1
+                j.order += 1
+    return sorted(data, key=lambda x: x.order, reverse=True)
 
 
 def plot(data):
@@ -102,7 +129,6 @@ def plot(data):
     x2 = []
     y2 = []
     for ind in data:
-        print(ind.rank)
         if ind.rank == 0:
             x.append(ind.value[0])
             y.append(ind.value[1])
@@ -119,9 +145,16 @@ def NSGA_II():
     for i in NSGA_values:
         data.append(Individual(i))
 
-    nondom_sort(data)
     plot(data)
-    crowding_dist(data_sorted)
+
+    fronts = nondom_sort(data)
+    crowding_dist(data, fronts)
+    p_order = partial_order(data)
+
+    plot(data)
+
+    for ind in p_order[:6]:
+        ind.print_info()
     # return/print top 6 individuals
 
 

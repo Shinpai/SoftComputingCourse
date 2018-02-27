@@ -1,0 +1,12 @@
+Order : 10
+Value [0, 1], Rank 1, Domination count -2
+Order : 10
+Value [1, 0], Rank 1, Domination count -2
+Order : -2
+Value [2, 1.5], Rank 0, Domination count 2
+Order : -2
+Value [1.5, 3], Rank 0, Domination count 2
+Order : -2
+Value [3, 1.6], Rank 0, Domination count 3
+Order : -2
+Value [4, 3.5], Rank 0, Domination count 5
