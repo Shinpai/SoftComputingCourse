@@ -7,7 +7,6 @@ from matplotlib import pyplot as plt
 
 # @author Harri Juutilainen 03/2018 // WIP
 # NSGA-II - nondominated sorting algorithm, crowding distance calc
-# MOEA-D - Tchebycheff fitness evaluation, weighted sum evaluation
 
 
 NSGA_values = [
@@ -25,36 +24,6 @@ NSGA_values = [
     [3.3, 6.5]
 ]
 
-MOEA_D_values = [
-    [-1.0074, -3.0188, 4.8305],
-    [0.2688, -0.1031, -1.9855],
-    [-0.8320, -1.6051, 2.0110],
-    [1.5686, 4.5163, 1.6634],
-    [1.2797, 4.2033, 0.3913],
-    [-2.0802, -4.4732, 1.9811],
-    [-0.6835, 2.3786, 1.6653],
-    [-4.8451, -2.3088, -3.2187],
-    [4.806, -0.7716, -3.7199],
-    [-3.3283, 0.4787, 4.9908],
-    [-3.9378, 4.4274, -3.2888],
-    [-1.2759, -0.8226, -4.6740]
-]
-
-MOEA_D_weights = [
-    [0, 1.0000],
-    [0.0909, 0.9091],
-    [0.1818, 0.8182],
-    [0.2727, 0.7273],
-    [0.3636, 0.6364],
-    [0.4545, 0.5455],
-    [0.5455, 0.4545],
-    [0.6364, 0.3636],
-    [0.7273, 0.2727],
-    [0.8182, 0.1818],
-    [0.9091, 0.0909],
-    [1.0000, 0]
-]
-
 
 class Individual:
     def __init__(self, val):
@@ -65,10 +34,10 @@ class Individual:
         self.dominated = []
         self.domination_count = 0
 
-    def print_info(self):
-        with open('NSGA_MOEAD_result.dat', 'a') as f:
-            print("Value {}, Rank {},\nDomination count {}, Distance {}\n".format(
-                self.value, self.rank, self.domination_count, self.distance
+    def print_info(self, index):
+        with open('NSGA2_result.dat', 'a') as f:
+            print("#{}: Value {}, Rank {},\nDomination count {}, Distance {}\n".format(
+                index, self.value, self.rank, self.domination_count, self.distance
                 ), file=f)
 
 
@@ -101,18 +70,19 @@ def nondom_sort(data):
                         Q.append(q)
             i += 1
             fronts = Q
-        return fronts
 
 
-def crowding_dist(data, fronts):
-    l = len(fronts)
+def crowding_dist(data):
     for ind in data:
         indeksi = data.index(ind)
         if indeksi != 0 and indeksi < len(data) - 1:
             for i in range(2):
                 n = data[indeksi + 1].value[i]
                 p = data[indeksi - 1]. value[i]
-                ind.distance += (ind.distance + (p - n)) / (7 - 0)
+                max_ = max([x.value[i] for x in data])
+                min_ = min([x.value[i] for x in data])
+                ind.distance += (ind.distance + (p - n)) / (max_ - min_)
+                ind.distance = abs(ind.distance)
 
 
 def partial_order(data):
@@ -122,6 +92,42 @@ def partial_order(data):
                 i.order -= 1
                 j.order += 1
     return sorted(data, key=lambda x: x.order, reverse=True)
+
+
+def NSGA_II():
+    '''
+    NSGA-II implementation to a set matrix of objectives.
+    Nondominated sorting and crowding distance calculation.
+    '''
+    data = []
+    for i in NSGA_values:
+        data.append(Individual(i))
+    print_data([], 'NSGA-II')
+
+    # NONDOMINATED SORTING
+    nondom_sort(data)
+    print_data(data, 'AFTER NONDOMINATED SORTING')
+
+    # CROWDING DISTANCE
+    crowding_dist(data)
+    p_order = partial_order(data)
+
+    # PARTIAL ORDER AND SELECTION
+    selected = p_order[:6]
+    print_data(selected, 'SELECTED')
+
+    plot(selected)
+
+
+def print_data(data, title):
+    with open('NSGA2_result.dat', 'a') as f:
+        print('\n' + title, file=f)
+        print('-'*30, file=f)
+    if data is not []:
+        i = 1
+        for x in data:
+            x.print_info(i)
+            i += 1
 
 
 def plot(data):
@@ -141,36 +147,6 @@ def plot(data):
     plt.show()
 
 
-def NSGA_II():
-    data = []
-    for i in NSGA_values:
-        data.append(Individual(i))
-
-    with open('NSGA_MOEAD_result.dat', 'a') as f:
-        print('\nAFTER NONDOMINATED SORTING:', file=f)
-        print('-'*30, file=f)
-    fronts = nondom_sort(data)
-    for ind in fronts:
-        ind.print_info()
-
-    crowding_dist(data, fronts)
-    p_order = partial_order(data)
-
-    with open('NSGA_MOEAD_result.dat', 'a') as f:
-        print('\nSELECTED:', file=f)
-        print('-'*30, file=f)
-    for ind in p_order[:6]:
-        ind.print_info()
-    # return/print top 6 individuals
-
-
-def MOEA_D(values, weights):
-    def tchebycheff_eval(values):
-        pass
-    fitness = tchebycheff_eval(values)
-    pass
-
-
 def clear():
     '''
     Tyhjää konsolin
@@ -186,13 +162,8 @@ def clear():
 
 def main():
     clear()
-    open('NSGA_MOEAD_result.dat', 'w').close()
-    keys = [x for x in range(1, 12)]
-    moead_value = dict(zip(keys, MOEA_D_values))
-    moead_weight = dict(zip(keys, MOEA_D_weights))
-
+    open('NSGA2_result.dat', 'w').close()
     NSGA_II()
-    MOEA_D(moead_value, moead_weight)
 
 
 ##############################################################################
