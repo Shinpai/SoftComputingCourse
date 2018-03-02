@@ -36,8 +36,8 @@ class Individual:
 
     def print_info(self, index):
         with open('NSGA2_result.dat', 'a') as f:
-            print("#{}: Value {}, Rank {},\nDomination count {}, Distance {}\n".format(
-                index, self.value, self.rank, self.dom_count, self.distance
+            print("#{}: Value {}, Rank {},\nDistance {}, PO rank {}\n".format(
+                index, self.value, self.rank, self.distance, self.order
                 ), file=f)
 
 
@@ -80,7 +80,9 @@ def nondom_sort(data):
 def crowding_dist(data):
     for ind in data:
         indeksi = data.index(ind)
-        if indeksi != 0 and indeksi < len(data) - 1:
+        if indeksi == 0 or indeksi == len(data) - 1:
+            ind.distance = 9999
+        elif indeksi > 1 and indeksi < len(data) - 1:
             for i in range(2):
                 n = data[indeksi + 1].value[i]
                 p = data[indeksi - 1]. value[i]
@@ -108,7 +110,7 @@ def NSGA_II():
     for i in NSGA_values:
         data.append(Individual(i))
     print_data([], 'NSGA-II')
-    plot(data, 'BEFORE SORTING')
+    plot(data, 'DATA')
 
     # NONDOMINATED SORTING
     nondom_sort(data)
@@ -116,12 +118,12 @@ def NSGA_II():
 
     # CROWDING DISTANCE
     crowding_dist(data)
-    p_order = partial_order(data)    
+    print_data(data, 'AFTER CROWDING DISTANCE')
 
     # PARTIAL ORDER AND SELECTION
+    p_order = partial_order(data)
     selected = p_order[:6]
     print_data(selected, 'SELECTED')
-    plot(data, 'SELECTED')
 
 
 def print_data(data, title):
@@ -138,13 +140,10 @@ def print_data(data, title):
 def plot(data,title='Title'):
     x = []
     y = []
-    colors = ['bo', 'go', 'ro', 'co', 'mo', 'yo', 'wo']
     for ind in data:
-        if ind.value[0] not in x:
-            x.append(ind.value[0])
-        if ind.value[1] not in y:
-            y.append(ind.value[1])
-        plt.plot(x, y, colors[ind.rank])
+        x.append(ind.value[0])
+        y.append(ind.value[1])
+        plt.scatter(x, y)
     plt.title(title)
     plt.show()
 

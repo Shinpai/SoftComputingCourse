@@ -43,11 +43,12 @@ class Individual:
     def __init__(self, x, weigth):
         self.x = x
         self.weigth = weigth
+        self.fitness = 0
 
     def print_info(self, index):
         with open('MOEAD_result.dat', 'a') as f:
-            print("#{}: ({},{},{})".format(
-                index, self.x[0], self.x[1], self.x[2]
+            print("#{}: ({},{},{})\nFit {}\n".format(
+                index, self.x[0], self.x[1], self.x[2], self.fitness
                 ), file=f)
 
 
@@ -79,37 +80,52 @@ def plot(data):
     plt.show()
 
 
-def f1(x1, x2):
-    return -10 * math.exp(-0.2 * math.sqrt(x1 ** 2 + x2 ** 2))
+def constraints(x, i):
+    x_pass = True if -5 <= x and x < 5 else False
+    i_pass = True if i <= 1 and i <= 3 else False
+    return True if x_pass and i_pass else False
 
 
-def f2(x):
-    return abs(x) ** .8 + 5 * math.sin(x ** 3)
-
-
-def constraints(x, index):
-    if -5 <= x and x < 5:
-        x_pass = True
-    if 1 <= i and i <= 3:
-        i_pass = True
-    if x_pass and i_pass:
-        return True
-    return False
-
-
-def MOEA_D(data, weights):
+def MOEA_D(data, weights, Z, approach):
+    # Initialization
     pop = []
     for i in data:
         pop.append(Individual(data[i], weights[i]))
+    EX_POP = pop
 
-    print_data(data, 'MOEAD')
+    func_list = [lambda x1, x2: -10 * math.exp(-0.2 * math.sqrt(x1 ** 2 + x2 ** 2)),
+                 lambda x, y: abs(x) ** .8 + 5 * math.sin(x ** 3)]
+
+    # evaluation functions
+    def tchebycheff(ind):
+        results = []
+        for i in range(2):
+            result = ind.weigth[i] * abs(func_list[i](ind.x[i], ind.x[i + 1]))
+            if constraints(ind.x[i], i):
+                results.append(result)
+        return max(results)
+
+    def weightedsum(ind):
+        results = []
+        for i in range(2):
+            result = ind.weigth[i] * func_list[i](ind.x[i], ind.x[i + 1])
+            if constraints(ind.x[i], i):
+                results.append(result)
+        return sum(results)
+
+    for ind in pop:
+        if approach is 'tchebycheff':
+            ind.fitness = tchebycheff(ind)
+        elif approach is 'weightedsum':
+            ind.fitness = weightedsum(ind)
+
+    print_data(pop, 'AFTER ' + approach)
 
     # things to maintain after iter:
     # list of points where x_i is the solution for subproblem i
     # list of function values for each i = F(x_i)    
     # vector z : best value found so far for objective
-    # external population to store nondominated solutions
-    pass
+    # external population to store nondominated solutions   
 
 
 def clear():
@@ -131,7 +147,9 @@ def main():
     keys = [x for x in range(1, 12)]
     _value = dict(zip(keys, MOEA_D_values))
     _weight = dict(zip(keys, MOEA_D_weights))
-    MOEA_D(_value, _weight)
+    Z = (-20, -12)
+    MOEA_D(_value, _weight, Z, 'tchebycheff')
+    MOEA_D(_value, _weight, Z, 'weightedsum')
 
 
 ##############################################################################

@@ -5,59 +5,98 @@ NSGA-II
 AFTER NONDOMINATED SORTING
 ------------------------------
 #1: Value [0, 1], Rank 1,
-Domination count -1, Distance 0
+Distance 0, PO rank 0
 
 #2: Value [1, 0], Rank 1,
-Domination count -1, Distance 0
+Distance 0, PO rank 0
 
 #3: Value [2, 1.5], Rank 1,
-Domination count -1, Distance 0
+Distance 0, PO rank 0
 
 #4: Value [1.5, 3], Rank 1,
-Domination count -1, Distance 0
+Distance 0, PO rank 0
 
 #5: Value [3, 1.6], Rank 2,
-Domination count -1, Distance 0
+Distance 0, PO rank 0
 
 #6: Value [4, 3.5], Rank 3,
-Domination count -1, Distance 0
+Distance 0, PO rank 0
 
 #7: Value [4.5, 3.1], Rank 3,
-Domination count -1, Distance 0
+Distance 0, PO rank 0
 
 #8: Value [5, 2.5], Rank 3,
-Domination count -1, Distance 0
+Distance 0, PO rank 0
 
 #9: Value [6, 5], Rank 4,
-Domination count -1, Distance 0
+Distance 0, PO rank 0
 
 #10: Value [5.5, 7], Rank 5,
-Domination count -1, Distance 0
+Distance 0, PO rank 0
 
 #11: Value [4.2, 6], Rank 4,
-Domination count -1, Distance 0
+Distance 0, PO rank 0
 
 #12: Value [3.3, 6.5], Rank 3,
-Domination count -1, Distance 0
+Distance 0, PO rank 0
+
+
+AFTER CROWDING DISTANCE
+------------------------------
+#1: Value [0, 1], Rank 1,
+Distance 9999, PO rank 0
+
+#2: Value [1, 0], Rank 1,
+Distance 0, PO rank 0
+
+#3: Value [2, 1.5], Rank 1,
+Distance 0.3333333333333333, PO rank 0
+
+#4: Value [1.5, 3], Rank 1,
+Distance 0.17619047619047618, PO rank 0
+
+#5: Value [3, 1.6], Rank 2,
+Distance 0.40476190476190477, PO rank 0
+
+#6: Value [4, 3.5], Rank 3,
+Distance 0.07142857142857142, PO rank 0
+
+#7: Value [4.5, 3.1], Rank 3,
+Distance 0.33333333333333337, PO rank 0
+
+#8: Value [5, 2.5], Rank 3,
+Distance 0.01428571428571429, PO rank 0
+
+#9: Value [6, 5], Rank 4,
+Distance 0.5476190476190477, PO rank 0
+
+#10: Value [5.5, 7], Rank 5,
+Distance 0.2, PO rank 0
+
+#11: Value [4.2, 6], Rank 4,
+Distance 0.4904761904761905, PO rank 0
+
+#12: Value [3.3, 6.5], Rank 3,
+Distance 9999, PO rank 0
 
 
 SELECTED
 ------------------------------
 #1: Value [5.5, 7], Rank 5,
-Domination count -1, Distance 0.2
+Distance 0.2, PO rank 11
 
 #2: Value [4.2, 6], Rank 4,
-Domination count -1, Distance 0.4904761904761905
+Distance 0.4904761904761905, PO rank 9
 
 #3: Value [6, 5], Rank 4,
-Domination count -1, Distance 0.5476190476190477
+Distance 0.5476190476190477, PO rank 7
 
-#4: Value [3.3, 6.5], Rank 3,
-Domination count -1, Distance 0
+#4: Value [5, 2.5], Rank 3,
+Distance 0.01428571428571429, PO rank 5
 
-#5: Value [5, 2.5], Rank 3,
-Domination count -1, Distance 0.01428571428571429
+#5: Value [4, 3.5], Rank 3,
+Distance 0.07142857142857142, PO rank 3
 
-#6: Value [4, 3.5], Rank 3,
-Domination count -1, Distance 0.07142857142857142
+#6: Value [4.5, 3.1], Rank 3,
+Distance 0.33333333333333337, PO rank 1
 
