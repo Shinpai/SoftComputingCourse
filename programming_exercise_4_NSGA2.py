@@ -32,12 +32,12 @@ class Individual:
         self.distance = 0
         self.order = 0
         self.dominated = []
-        self.domination_count = 0
+        self.dom_count = 0
 
     def print_info(self, index):
         with open('NSGA2_result.dat', 'a') as f:
             print("#{}: Value {}, Rank {},\nDomination count {}, Distance {}\n".format(
-                index, self.value, self.rank, self.domination_count, self.distance
+                index, self.value, self.rank, self.dom_count, self.distance
                 ), file=f)
 
 
@@ -46,15 +46,20 @@ def nondom_sort(data):
         Fast nondominated sort, calculates rank and domination counts
         for Individual objects
         '''
+        def dominates(first, second):
+            for i in range(2):
+                if first.value[i] > second.value[i]:
+                    return False
+            return True
         # evaluate dominations
         fronts = []
         for p in data:
             for q in data:
-                if p.value[0] < q.value[0] and p.value[1] < q.value[1]:
+                if dominates(p, q):
                     p.dominated.append(q)
-                elif p.value[0] > q.value[0] and p.value[1] > q.value[1]:
-                    p.domination_count += 1
-            if p.domination_count == 0:
+                elif dominates(q, p):
+                    p.dom_count += 1
+            if p.dom_count == 0:
                 # p in front 1
                 p.rank = 1
                 fronts.append(p)
@@ -63,9 +68,9 @@ def nondom_sort(data):
         while len(fronts) != 0:
             Q = []
             for p in fronts:
-                for q in fronts:
-                    q.domination_count -= 1
-                    if q.domination_count == 0:
+                for q in p.dominated:
+                    q.dom_count -= 1
+                    if q.dom_count == 0:
                         q.rank = i + 1
                         Q.append(q)
             i += 1
@@ -103,6 +108,7 @@ def NSGA_II():
     for i in NSGA_values:
         data.append(Individual(i))
     print_data([], 'NSGA-II')
+    plot(data, 'BEFORE SORTING')
 
     # NONDOMINATED SORTING
     nondom_sort(data)
@@ -110,13 +116,12 @@ def NSGA_II():
 
     # CROWDING DISTANCE
     crowding_dist(data)
-    p_order = partial_order(data)
+    p_order = partial_order(data)    
 
     # PARTIAL ORDER AND SELECTION
     selected = p_order[:6]
     print_data(selected, 'SELECTED')
-
-    plot(selected)
+    plot(data, 'SELECTED')
 
 
 def print_data(data, title):
@@ -130,20 +135,17 @@ def print_data(data, title):
             i += 1
 
 
-def plot(data):
+def plot(data,title='Title'):
     x = []
     y = []
-    x2 = []
-    y2 = []
+    colors = ['bo', 'go', 'ro', 'co', 'mo', 'yo', 'wo']
     for ind in data:
-        if ind.rank == 0:
+        if ind.value[0] not in x:
             x.append(ind.value[0])
+        if ind.value[1] not in y:
             y.append(ind.value[1])
-            plt.plot(x, y, 'ro')
-        elif ind.rank == 1:
-            x2.append(ind.value[0])
-            y2.append(ind.value[1])
-            plt.plot(x2, y2, 'bo')
+        plt.plot(x, y, colors[ind.rank])
+    plt.title(title)
     plt.show()
 
 

@@ -39,6 +39,18 @@ MOEA_D_weights = [
 ]
 
 
+class Individual:
+    def __init__(self, x, weigth):
+        self.x = x
+        self.weigth = weigth
+
+    def print_info(self, index):
+        with open('MOEAD_result.dat', 'a') as f:
+            print("#{}: ({},{},{})".format(
+                index, self.x[0], self.x[1], self.x[2]
+                ), file=f)
+
+
 def print_data(data, title):
     with open('MOEAD_result.dat', 'a') as f:
         print('\n' + title, file=f)
@@ -86,6 +98,17 @@ def constraints(x, index):
 
 
 def MOEA_D(data, weights):
+    pop = []
+    for i in data:
+        pop.append(Individual(data[i], weights[i]))
+
+    print_data(data, 'MOEAD')
+
+    # things to maintain after iter:
+    # list of points where x_i is the solution for subproblem i
+    # list of function values for each i = F(x_i)    
+    # vector z : best value found so far for objective
+    # external population to store nondominated solutions
     pass
 
 
