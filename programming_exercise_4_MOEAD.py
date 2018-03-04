@@ -38,18 +38,25 @@ MOEA_D_weights = [
     [1.0000, 0]
 ]
 
+T = 4
+
 
 class Individual:
     def __init__(self, x, weigth):
         self.x = x
         self.weigth = weigth
         self.fitness = 0
+        self.neighbors = []
 
     def print_info(self, index):
         with open('MOEAD_result.dat', 'a') as f:
-            print("#{}: ({},{},{})\nFit {}\n".format(
+            print("#{}: ({},{},{})\nFit {}".format(
                 index, self.x[0], self.x[1], self.x[2], self.fitness
                 ), file=f)
+            print("Neighbors:", file=f)
+            for i in self.neighbors:
+                print('-- ' + str(i[1]), file=f)
+            print('\n', file=f)
 
 
 def print_data(data, title):
@@ -66,17 +73,10 @@ def print_data(data, title):
 def plot(data):
     x = []
     y = []
-    x2 = []
-    y2 = []
     for ind in data:
-        if ind.rank == 0:
-            x.append(ind.value[0])
-            y.append(ind.value[1])
-            plt.plot(x, y, 'ro')
-        elif ind.rank == 1:
-            x2.append(ind.value[0])
-            y2.append(ind.value[1])
-            plt.plot(x2, y2, 'bo')
+        x.append(ind.value[0])
+        y.append(ind.value[1])
+        plt.plot(x, y, 'ro')
     plt.show()
 
 
@@ -86,46 +86,98 @@ def constraints(x, i):
     return True if x_pass and i_pass else False
 
 
-def MOEA_D(data, weights, Z, approach):
+def distance(a, b):
+    return math.hypot(a[1] - a[0], b[1] - b[0])
+
+
+def crossover(a, b):
+    parent1 = a[1]
+    parent2 = b[1]
+    y = Individual(parent1.x, parent2.weigth)
+    return y
+
+
+def repair(y):
+    for i in range(2):
+        while not constraints(y.x[i], i):
+            y.x[i] / math.pi
+    return y
+
+
+def MOEA_D(data, weights, approach):
     # Initialization
     pop = []
     for i in data:
         pop.append(Individual(data[i], weights[i]))
     EX_POP = pop
+    Z = [-20, -12]
 
+    # evaluation functions
     func_list = [lambda x1, x2: -10 * math.exp(-0.2 * math.sqrt(x1 ** 2 + x2 ** 2)),
                  lambda x, y: abs(x) ** .8 + 5 * math.sin(x ** 3)]
 
-    # evaluation functions
-    def tchebycheff(ind):
+    def evaluate(ind):
         results = []
         for i in range(2):
-            result = ind.weigth[i] * abs(func_list[i](ind.x[i], ind.x[i + 1]))
+            if approach is 'tchebycheff':
+                result = ind.weigth[i] * abs(func_list[i](ind.x[i], ind.x[i + 1]))
+            elif approach is 'weightedsum':
+                result = ind.weigth[i] * func_list[i](ind.x[i], ind.x[i + 1])
             if constraints(ind.x[i], i):
                 results.append(result)
-        return max(results)
-
-    def weightedsum(ind):
-        results = []
-        for i in range(2):
-            result = ind.weigth[i] * func_list[i](ind.x[i], ind.x[i + 1])
-            if constraints(ind.x[i], i):
-                results.append(result)
-        return sum(results)
-
-    for ind in pop:
         if approach is 'tchebycheff':
-            ind.fitness = tchebycheff(ind)
+            return max(results)
         elif approach is 'weightedsum':
-            ind.fitness = weightedsum(ind)
+            return sum(results)
 
-    print_data(pop, 'AFTER ' + approach)
+    # MAIN LOOP
+    for ind in pop:
+        # Initialize population fitness with given approach
+        ind.fitness = evaluate(ind)
+        # Calculate euclidian distances for weight vectors
+        # Add neighbors ( including self )
+        distances = [(0, ind.x)]
+        for i in pop:
+            distances.append((distance(ind.weigth, i.weigth), i.x))
+        ind.neighbors += sorted(distances, key=lambda tup: tup[0])[:T]
 
-    # things to maintain after iter:
-    # list of points where x_i is the solution for subproblem i
-    # list of function values for each i = F(x_i)    
-    # vector z : best value found so far for objective
-    # external population to store nondominated solutions   
+        # Random sample of 2 solutions from neighbors
+        kl = rng.sample(ind.neighbors, 2)
+        # Reproduce a new solution
+        y = crossover(kl[0], kl[1])
+        # Repair / Improve
+        y = repair(y)
+        # Evaluate
+        y_ = evaluate(y)
+
+        # update z
+        for i in range(2):
+            if Z[i] < y_[i]:
+                Z[i] = y_[i]
+        # update neighbors
+        for n in ind.neighbors:
+            for i in range(2):
+                if y_[i] < n[1][i]:
+                    n[1][i] = y_[i]
+                    n[1].fitness = y_
+            pop[n] = n
+
+        def dominates(first, second):
+            for i in range(2):
+                if first.value[i] > second.value[i]:
+                    return False
+            return True
+
+        # update previous population
+        for solution in EX_POP:
+            if dominates(y, solution):
+                EX_POP.remove(solution)
+            else:
+                EX_POP.append(y)
+
+    # END MAIN LOOP
+
+    print_data(pop, approach.upper())
 
 
 def clear():
@@ -147,9 +199,9 @@ def main():
     keys = [x for x in range(1, 12)]
     _value = dict(zip(keys, MOEA_D_values))
     _weight = dict(zip(keys, MOEA_D_weights))
-    Z = (-20, -12)
-    MOEA_D(_value, _weight, Z, 'tchebycheff')
-    MOEA_D(_value, _weight, Z, 'weightedsum')
+
+    MOEA_D(_value, _weight, 'tchebycheff')
+    MOEA_D(_value, _weight, 'weightedsum')
 
 
 ##############################################################################
