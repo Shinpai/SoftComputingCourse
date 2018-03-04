@@ -109,7 +109,6 @@ def MOEA_D(data, weights, approach):
     pop = []
     for i in data:
         pop.append(Individual(data[i], weights[i]))
-    EX_POP = pop
     Z = [-20, -12]
 
     # evaluation functions
@@ -130,7 +129,6 @@ def MOEA_D(data, weights, approach):
         elif approach is 'weightedsum':
             return sum(results)
 
-    # MAIN LOOP
     for ind in pop:
         # Initialize population fitness with given approach
         ind.fitness = evaluate(ind)
@@ -138,9 +136,12 @@ def MOEA_D(data, weights, approach):
         # Add neighbors ( including self )
         distances = [(0, ind.x)]
         for i in pop:
-            distances.append((distance(ind.weigth, i.weigth), i.x))
+            distances.append((distance(ind.weigth, i.weigth), i))
         ind.neighbors += sorted(distances, key=lambda tup: tup[0])[:T]
+    EX_POP = pop  # set initialized pop as external pop
 
+    # MAIN LOOP
+    for ind in pop:
         # Random sample of 2 solutions from neighbors
         kl = rng.sample(ind.neighbors, 2)
         # Reproduce a new solution
@@ -148,19 +149,18 @@ def MOEA_D(data, weights, approach):
         # Repair / Improve
         y = repair(y)
         # Evaluate
-        y_ = evaluate(y)
+        y.fitness = evaluate(y)
 
         # update z
         for i in range(2):
-            if Z[i] < y_[i]:
-                Z[i] = y_[i]
+            fy = func_list[i](y.x[i], y.x[i + 1])
+            if Z[i] < fy:
+                Z[i] = fy
+
         # update neighbors
         for n in ind.neighbors:
             for i in range(2):
-                if y_[i] < n[1][i]:
-                    n[1][i] = y_[i]
-                    n[1].fitness = y_
-            pop[n] = n
+                pass
 
         def dominates(first, second):
             for i in range(2):
@@ -168,7 +168,7 @@ def MOEA_D(data, weights, approach):
                     return False
             return True
 
-        # update previous population
+        # update external population
         for solution in EX_POP:
             if dominates(y, solution):
                 EX_POP.remove(solution)
@@ -176,8 +176,7 @@ def MOEA_D(data, weights, approach):
                 EX_POP.append(y)
 
     # END MAIN LOOP
-
-    print_data(pop, approach.upper())
+    print_data(EX_POP, approach.upper())
 
 
 def clear():
@@ -201,7 +200,7 @@ def main():
     _weight = dict(zip(keys, MOEA_D_weights))
 
     MOEA_D(_value, _weight, 'tchebycheff')
-    MOEA_D(_value, _weight, 'weightedsum')
+    # MOEA_D(_value, _weight, 'weightedsum')
 
 
 ##############################################################################
