@@ -53,14 +53,14 @@ class Individual:
 
     def print_info(self, index, neighbool):
         with open('MOEAD_result.dat', 'a') as f:
-            print("#{}: ({},{},{})\nFit {}".format(
+            print("#{}: ({},{},{}),\n-- Fitness: {}".format(
                 index, self.x[0], self.x[1], self.x[2], self.fitness
                 ), file=f)
             if neighbool:
                 print("Neighbors:", file=f)
                 for i in self.neighbors:
-                    print('-- ' + str(i[1].x), file=f)
-            print('\n', file=f)
+                    print('-- {}, dist: {}'.format(i[1].x, i[0]), file=f)
+                print('', file=f)
 
 
 def print_data(data, title, neighbool):
@@ -93,7 +93,9 @@ def evaluate(ind, approach):
 
 
 def eval_neighbors(ind, pop):
-    distances = [[0, ind]]
+    # self is in neighbors?
+    # distances = [[0, ind]]
+    distances = []
     for i in pop:
         distances.append((distance(ind.weigth, i.weigth), i))
     srtd = sorted(distances, key=lambda tup: tup[0])
@@ -120,15 +122,24 @@ def distance(a, b):
 def crossover(a, b):
     def repair(y):
         for i in range(2):
+            # Torque repair from PSO
+            max_l = 10
             while not constraints(y.x[i], i):
-                y.x[i] / math.pi
+                if y.x[i] < 5:
+                    y.x[i] = 5 - (y.x[i] % max_l)
+                elif y.x[i] > -5:
+                    y.x[i] = -5 + (y.x[i] % max_l)
         return y
 
     parent1 = a[1]
     parent2 = b[1]
     y = Individual(parent1.x, parent2.weigth)
-    y = repair(y)
-    return y
+
+    rand = rng.random()
+    # BQI probability from RCGA implementation
+    prob = (2 * rand) ** 1.5 if rand <= .5 else (1 / (2 * (1 - rand))) ** 1.5
+    y.fitness = .5 * ((1 + prob) * par1.fitness + (1 - prob) * par2.fitness)
+    return repair(y)
 
 
 def MOEA_D(data, weights, approach):
@@ -141,7 +152,7 @@ def MOEA_D(data, weights, approach):
         # Initialize population fitness with given approach
         ind.fitness = evaluate(ind, approach)
         # Calculate euclidian distances for weight vectors
-        # Add neighbors (including self )
+        # Add neighbors (including self ?)
         ind.neighbors += eval_neighbors(ind, pop)
     EX_POP = pop  # set initialized pop as external pop
     print_data(EX_POP, approach.upper(), False)
@@ -149,7 +160,7 @@ def MOEA_D(data, weights, approach):
     # UPDATE LOOP
     ITERS = 20
     while ITERS < 20:
-        for ind in EX_POP:
+        for ind in pop:
             # Random sample of 2 solutions from neighbors
             kl = rng.sample(ind.neighbors, 2)
             # Reproduce a new solution
@@ -169,9 +180,9 @@ def MOEA_D(data, weights, approach):
             # update external population
             for solution in EX_POP:
                 if dominates(y, solution):
-                    EX_POP.remove(solution)
-                else:
                     EX_POP.append(y)
+                else:
+                    EX_POP.remove(solution)
         ITERS += 1
     # END UPDATE LOOP
     print_data(EX_POP, approach.upper(), True)
@@ -193,7 +204,7 @@ def clear():
 def main():
     clear()
     open('MOEAD_result.dat', 'w').close()
-    keys = [x for x in range(1, 12)]
+    keys = [x for x in range(12)]
     _value = dict(zip(keys, MOEA_D_values))
     _weight = dict(zip(keys, MOEA_D_weights))
 
