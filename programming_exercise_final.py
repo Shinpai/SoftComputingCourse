@@ -10,18 +10,24 @@ import matplotlib.animation as animation
 # Memetic particle swarm optimization
 
 # PARAMETERS, McCormick function
-POPULATION_SIZE = 20
+FILE_NAME = 'MPSO_result.dat'
+POPULATION_SIZE = 200
 ACC_CONST = 2
 VMAX = 3
 DIM = 2
+R_NEIGHBORS = 4
 BOUNDS = [(-1.5, 4), (-3, 4)]
 
+fig, ax = plt.subplots()
+ln, = plt.plot([], [], 'ro')
+
 frames = []
+anis = []
 
 '''
 FUNC_ : (x - 2) ** 2 + (y - 1) ** 2
 EQ_1 : 2 * y - 1 = x
-INEQ_1 : x ** 2 / 4 + y - 1 <= 0 
+INEQ_1 : x ** 2 / 4 + y - 1 <= 0
 '''
 
 
@@ -46,7 +52,8 @@ class Particle:
 
     def compare_pbest(self):
         '''
-        Check if particle is at pb fitness
+        Checks if particle is at pbest fitness.
+        Sets new pbest accordingly.
         '''
         if self.fitness < self.pbest.fitness:
             self.pbest = self
@@ -66,7 +73,7 @@ class Particle:
     def move(self):
         '''
         Update the position of a particle.
-        Subjects particle to positional constraints.
+        Subjects particle to positional constraints (torque).
         '''
         vanha = [self.position[0], self.position[1]]
 
@@ -74,7 +81,7 @@ class Particle:
         for i in range(DIM):
             self.position[i] += self.velocity[i]
             max_l = abs(BOUNDS[i][0] - BOUNDS[i][1])
-        # apply constraints
+        # torque constraints
             if self.position[i] > BOUNDS[i][0]:
                 self.position[i] = BOUNDS[i][0] + (self.position[i] % max_l)
             elif self.position[i] < BOUNDS[i][1]:
@@ -92,10 +99,11 @@ class Particle:
 
     def print_par(self):
         ''' Print info of a particle '''
-        print("#{}\nPOS ({},{})\nvalue: {}\n".format(
-            self.index, round(self.position[0], 3),
-            round(self.position[1], 3), round(self.fitness, 3)
-        ))
+        with open(FILE_NAME, 'a') as f:
+            print("#{}\nPOS ({},{})\nvalue: {}\n".format(
+                self.index, round(self.position[0], 3),
+                round(self.position[1], 3), round(self.fitness, 3)),
+                file=f)
 
 
 class Swarm:
@@ -122,33 +130,61 @@ class Swarm:
 
     def print_gen(self, index, mode, file):
         ''' prints out the necessary info for a generation '''
-        print("ITERS:{}\n* {} {} \n* ({},{})\n".format(
+        print("ITERS: {}, {}\ngbest fit: {}\npos: ({},{})\n".format(
             index, mode, round(self.gbest.fitness, 3),
-            self.gbest.position[0], self.gbest.position[1]
+            round(self.gbest.position[0], 3), round(self.gbest.position[1], 3)
         ), file=file)
 
-    def local_search(schema):
+    def get_neighbors(self, par):
+        neighs = []
+        indeksi = self.particles.index(par)
+        for r in range(R_NEIGHBORS):
+            ind_l = (indeksi + r) % len(self.particles)
+            ind_k = (indeksi - r) % len(self.particles)
+            neighs.append(self.particles[ind_l])
+            neighs.append(self.particles[ind_k])
+        return neighs
+
+    def local_search(self, schema):
         if schema == 'scheme_1':
             # local search in the position of gbest
-            pass
+            neighbors = self.get_neighbors(self.gbest)
+            new_solution = max(neighbors, key=lambda x: x.fitness)
+            return new_solution
         elif schema == 'scheme_2':
             # search threshold with rng for each position
             pass
         elif schema == 'scheme_3a':
             # search on best position and randomly selected positions
-            pass
+            results = []
+            # best (same as scheme 1)
+            best_neighbors = self.get_neighbors(self.gbest)
+            results.append(max(best_neighbors, key=lambda x: x.fitness))
+            # some random particles selected
+            sample = rng.sample(self.particles, 4)
+            for n in sample:
+                rng_neighbors = self.get_neighbors(n)
+                results.append(max(rng_neighbors, key=lambda x: x.fitness))
+            return max(results, key=lambda x: x.fitness)
         elif schema == 'scheme_3b':
             # search on best position and randomly selected positions
-            # search space is defined
-            pass
+            # search space is defined by parameter SS
+            results = []
+            # best (same as scheme 1)
+            best_neighbors = self.get_neighbors(self.gbest)
+            results.append(max(best_neighbors, key=lambda x: x.fitness))
+            # some random particles selected
+            sample = rng.sample(self.particles, 4)
+            for n in sample:
+                rng_neighbors = self.get_neighbors(n)
+                results.append(max(rng_neighbors, key=lambda x: x.fitness))
+            return max(results, key=lambda x: x.fitness)
 
 
 def MPSO(ITERS, mode):
     '''
-    Main MPSO loop
+    Main MPSO loop.
     '''
-    # Input: N , χ, c1, c2, xmin, xmax (lower & upper bounds), F (objective function).
-    # Set t = 0
     t = 0
     # Initialize swarm
     swarm = Swarm()
@@ -176,22 +212,19 @@ def MPSO(ITERS, mode):
             # Compare particle before and after moving and choose optimal
             par = vanha if vanha.fitness < uusi.fitness else uusi
 
-            # Do local search with chosen schemata
+            # LOCAL SEARCH
             if t % 20 == 0:
                 y = swarm.local_search(mode)
                 # Compare to previous particle and choose optimal
-                par = par if par.fitness < y.fitness else y
+                par = par if par.fitness < y.fitness else y                
 
         # PRINTING AND VISUALS
-        if t % 100 == 0 or t == ITERS:
-            with open('MPSO_result.dat', 'a') as f:
+        if t % 200 == 0 or t == ITERS:
+            with open(FILE_NAME, 'a') as f:
                 swarm.print_gen(t, mode, f)
         if t % 20 == 0:
             make_frame(swarm, mode)
 
-        ''' # Check for termination criterion
-        if error > stop_criterion:
-            break '''
         t += 1
 
 
@@ -216,12 +249,49 @@ def make_frame(swarm, mode):
     frames.append(frame)
 
 
+def init():
+    ax.set_xlim(-2, 3)
+    ax.set_ylim(-2, 2)
+    return ln,
+
+
+def update(counter):
+    x = frames[counter][0]
+    y = frames[counter][1]
+    plt.title(frames[counter][2])
+    ln.set_data(x, y)
+    return ln,
+
+
+def scaffold(iters, mode):
+    '''
+    Scaffold printing file and animations. Runs the main MPSO loop.
+    '''
+    with open(FILE_NAME, 'a') as f:
+        print('\n############### ' + mode.upper() + ' ###############\n', file=f)
+    MPSO(iters, mode)
+    exit(0)
+
+    # TODO
+    anis.append((mode, animation.FuncAnimation(fig, update, init_func=init,
+                                               interval=60, repeat=False)))
+    frames = []
+
+
 def main():
     clear()
     # clear result file
     open('MPSO_result.dat', 'w').close()
-    MPSO(1500, 'schema1')
-    MPSO_F(100, 2, 2, -1, 4, -3, 4)
+    modes = ['scheme_1', 'scheme_3a']
+
+    for mode in modes:
+        scaffold(2000, mode)
+    exit(0)
+
+    # TODO
+    # save animations for all schemes
+    for ani in anis:
+        ani[1].save('MPSO_' + ani[0] + '.mp4')
 
 ##############################################################################
 
