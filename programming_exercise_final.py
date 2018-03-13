@@ -1,7 +1,7 @@
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import random as rng
-import os
+import os, sys
 import math
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
@@ -10,8 +10,8 @@ import matplotlib.animation as animation
 # Memetic particle swarm optimization
 
 # PARAMETERS, McCormick function
-FILE_NAME = 'MPSO_result.dat'
-POPULATION_SIZE = 100
+FILE_NAME = 'MPSO_' + sys.argv[1] + '.dat'
+POPULATION_SIZE = 40
 ACC_CONST = 2
 VMAX = 3
 DIM = 2
@@ -22,13 +22,6 @@ fig, ax = plt.subplots()
 ln, = plt.plot([], [], 'ro')
 
 frames = []
-anis = []
-
-'''
-FUNC_ : (x - 2) ** 2 + (y - 1) ** 2
-EQ_1 : 2 * y - 1 = x
-INEQ_1 : x ** 2 / 4 + y - 1 <= 0
-'''
 
 
 class Particle:
@@ -138,6 +131,10 @@ class Swarm:
         ), file=file)
 
     def get_neighbors(self, par):
+        '''
+        Get a list of neighbors for a particle, uses circular topology for the list.
+        \nRETURNS: list (Particle object)
+        '''
         neighs = []
         indeksi = self.particles.index(par)
         for r in range(R_NEIGHBORS):
@@ -183,14 +180,18 @@ class Swarm:
             # search on best position and randomly selected positions
             # search space is defined by parameter SS
             results = []
+            c_rand = rng.random()
+            SS = R_NEIGHBORS * 2
             # best (same as scheme 1)
             best_neighbors = self.get_neighbors(self.gbest)
-            results.append(max(best_neighbors, key=lambda x: x.fitness))
+            local_best = max(best_neighbors, key=lambda x: x.fitness)
+            results.append(local_best)
             # some random particles selected
             sample = rng.sample(self.particles, 4)
             for n in sample:
-                rng_neighbors = self.get_neighbors(n)
-                results.append(max(rng_neighbors, key=lambda x: x.fitness))
+                if abs(local_best.fitness - n.fitness) > c_rand * SS:
+                    rng_neighbors = self.get_neighbors(n)
+                    results.append(max(rng_neighbors, key=lambda x: x.fitness))
             return max(results, key=lambda x: x.fitness)
 
 
@@ -228,10 +229,10 @@ def MPSO(ITERS, mode):
             par = vanha if vanha.fitness < uusi.fitness else uusi
 
             # LOCAL SEARCH
-            if t % 20 == 0:
+            if t % 100 == 0:
                 y = swarm.local_search(mode)
                 # Compare to previous particle and choose optimal
-                par = par if par.fitness < y.fitness else y                
+                par = par if par.fitness < y.fitness else y
 
         # PRINTING AND VISUALS
         if t % 500 == 0 or t == ITERS - 1:
@@ -254,9 +255,10 @@ def clear():
     else:
         print("\n" * 30)
 
+# ####################### -- ANIMATION -- ########################
+
 
 def make_frame(swarm, mode):
-    # *-* EXTRA *-* #
     ''' Create a snapshot of swarm particle positions '''
     x = [par.position[0] for par in swarm.particles]
     y = [par.position[1] for par in swarm.particles]
@@ -277,35 +279,32 @@ def update(counter):
     ln.set_data(x, y)
     return ln,
 
-
-def scaffold(iters, mode):
-    '''
-    Scaffold printing file and animations for different approaches.
-    '''
-    with open(FILE_NAME, 'a') as f:
-        print('\n############### ' + mode.upper() + ' ###############\n', file=f)
-    # TODO
-    anis.append((mode, animation.FuncAnimation(fig, update, init_func=init,
-                                               interval=60, repeat=False)))
-    frames = []
+# ####################### -- END ANIMATION -- ########################
 
 
 def main():
     clear()
     # clear result file
     open('MPSO_result.dat', 'w').close()
-    modes = ['scheme_1', 'scheme_2', 'scheme_3a']
+    modes = ['scheme_1', 'scheme_2', 'scheme_3a', 'scheme_3b']
     ITERS = 2000
 
-    for mode in modes:
-        scaffold(ITERS, mode)
-        MPSO(ITERS, mode)
-    exit(0)
+    if len(sys.argv) == 2 and sys.argv[1] in modes:
+        mode = str(sys.argv[1])
+    else:
+        print('Give scheme in args. Implemented schemes:')
+        print(modes)
+        exit(0)
 
-    # TODO
-    # save animations for all schemes
-    for ani in anis:
-        ani[1].save('MPSO_' + ani[0] + '.mp4')
+    with open(FILE_NAME, 'a') as f:
+        print('\n############### ' + mode.upper() + ' ###############\n', file=f)
+    print('\nIn progress : ' + mode)
+    MPSO(ITERS, mode)
+    print('Finished : ' + mode)
+
+    ani = animation.FuncAnimation(fig, update, init_func=init,
+                                  interval=60, repeat=False)
+    ani.save('MPSO_' + mode + '.mp4')
 
 ##############################################################################
 

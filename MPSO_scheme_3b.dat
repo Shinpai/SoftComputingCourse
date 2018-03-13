@@ -1,0 +1,23 @@
+
+############### SCHEME_3B ###############
+
+ITERS: 0, scheme_3b
+gbest fit: -1.868
+pos: (-0.559,-1.731)
+
+ITERS: 500, scheme_3b
+gbest fit: -1.913
+pos: (-0.566,-1.565)
+
+ITERS: 1000, scheme_3b
+gbest fit: -1.913
+pos: (-0.544,-1.549)
+
+ITERS: 1500, scheme_3b
+gbest fit: -1.913
+pos: (-0.544,-1.549)
+
+ITERS: 1999, scheme_3b
+gbest fit: -1.913
+pos: (-0.544,-1.549)
+

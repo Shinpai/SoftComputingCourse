@@ -1,0 +1,23 @@
+
+############### SCHEME_2 ###############
+
+ITERS: 0, scheme_2
+gbest fit: -1.707
+pos: (-0.289,-1.742)
+
+ITERS: 500, scheme_2
+gbest fit: -1.91
+pos: (-0.533,-1.494)
+
+ITERS: 1000, scheme_2
+gbest fit: -1.913
+pos: (-0.557,-1.563)
+
+ITERS: 1500, scheme_2
+gbest fit: -1.913
+pos: (-0.557,-1.563)
+
+ITERS: 1999, scheme_2
+gbest fit: -1.913
+pos: (-0.557,-1.563)
+
