@@ -2,42 +2,68 @@
 ############### SCHEME_1 ###############
 
 ITERS: 0, scheme_1
-gbest fit: -1.902
-pos: (-0.492,-1.455)
+gbest fit: -1.826
+pos: (-0.662,-1.37)
 
-ITERS: 200, scheme_1
+ITERS: 500, scheme_1
 gbest fit: -1.913
-pos: (-0.555,-1.559)
-
-ITERS: 400, scheme_1
-gbest fit: -1.913
-pos: (-0.547,-1.543)
-
-ITERS: 600, scheme_1
-gbest fit: -1.913
-pos: (-0.547,-1.543)
-
-ITERS: 800, scheme_1
-gbest fit: -1.913
-pos: (-0.551,-1.55)
+pos: (-0.54,-1.541)
 
 ITERS: 1000, scheme_1
 gbest fit: -1.913
-pos: (-0.551,-1.55)
+pos: (-0.54,-1.541)
 
-ITERS: 1200, scheme_1
+ITERS: 1500, scheme_1
+gbest fit: -1.913
+pos: (-0.54,-1.541)
+
+ITERS: 1999, scheme_1
+gbest fit: -1.913
+pos: (-0.54,-1.541)
+
+
+############### SCHEME_2 ###############
+
+ITERS: 0, scheme_2
+gbest fit: -1.793
+pos: (-0.24,-1.409)
+
+ITERS: 500, scheme_2
+gbest fit: -1.912
+pos: (-0.538,-1.522)
+
+ITERS: 1000, scheme_2
 gbest fit: -1.913
 pos: (-0.551,-1.55)
 
-ITERS: 1400, scheme_1
+ITERS: 1500, scheme_2
 gbest fit: -1.913
 pos: (-0.551,-1.55)
 
-ITERS: 1600, scheme_1
+ITERS: 1999, scheme_2
 gbest fit: -1.913
 pos: (-0.551,-1.55)
 
-ITERS: 1800, scheme_1
+
+############### SCHEME_3A ###############
+
+ITERS: 0, scheme_3a
+gbest fit: -1.762
+pos: (-0.263,-1.627)
+
+ITERS: 500, scheme_3a
 gbest fit: -1.913
-pos: (-0.551,-1.55)
+pos: (-0.526,-1.531)
+
+ITERS: 1000, scheme_3a
+gbest fit: -1.913
+pos: (-0.531,-1.556)
+
+ITERS: 1500, scheme_3a
+gbest fit: -1.913
+pos: (-0.552,-1.55)
+
+ITERS: 1999, scheme_3a
+gbest fit: -1.913
+pos: (-0.552,-1.55)
 

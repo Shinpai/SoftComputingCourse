@@ -11,11 +11,11 @@ import matplotlib.animation as animation
 
 # PARAMETERS, McCormick function
 FILE_NAME = 'MPSO_result.dat'
-POPULATION_SIZE = 200
+POPULATION_SIZE = 100
 ACC_CONST = 2
 VMAX = 3
 DIM = 2
-R_NEIGHBORS = 4
+R_NEIGHBORS = 2
 BOUNDS = [(-1.5, 4), (-3, 4)]
 
 fig, ax = plt.subplots()
@@ -41,6 +41,7 @@ class Particle:
         self.fitness = 0.0
         self.pbest = self
         self.lbest = self
+        self.r_for_local = 0.0
 
     def evaluate(self, x, y):
         '''
@@ -48,6 +49,7 @@ class Particle:
         particles fitness set as function value,
         compares particle to its personal best after eval
         '''
+        self.r_for_local = rng.random()
         return math.sin(x + y) + (x - y) ** 2 - 1.5 * x + 2.5 * y + 1
 
     def compare_pbest(self):
@@ -146,14 +148,25 @@ class Swarm:
         return neighs
 
     def local_search(self, schema):
+        '''
+        The main part of this MPSO. 4 different schemes for local search.
+        \nRETURNS: Particle object
+        '''
         if schema == 'scheme_1':
             # local search in the position of gbest
             neighbors = self.get_neighbors(self.gbest)
-            new_solution = max(neighbors, key=lambda x: x.fitness)
-            return new_solution
+            return max(neighbors, key=lambda x: x.fitness)
         elif schema == 'scheme_2':
-            # search threshold with rng for each position
-            pass
+            # local search for each position if rng value (0 - 1)
+            # is below threshold
+            # threshold parameter r > 0
+            threshold = .2
+            results = []
+            for part in self.particles:
+                if part.r_for_local < threshold:
+                    naap = self.get_neighbors(part)
+                    results.append(max(naap, key=lambda x: x.fitness))
+            return max(results, key=lambda x: x.fitness)
         elif schema == 'scheme_3a':
             # search on best position and randomly selected positions
             results = []
@@ -183,7 +196,8 @@ class Swarm:
 
 def MPSO(ITERS, mode):
     '''
-    Main MPSO loop.
+    Main MPSO loop. Same as PSO but with
+    local search methods used once in a while.
     '''
     t = 0
     # Initialize swarm
@@ -209,6 +223,7 @@ def MPSO(ITERS, mode):
             # Move particle according to velocity
             par.move()
             uusi = par
+
             # Compare particle before and after moving and choose optimal
             par = vanha if vanha.fitness < uusi.fitness else uusi
 
@@ -219,7 +234,7 @@ def MPSO(ITERS, mode):
                 par = par if par.fitness < y.fitness else y                
 
         # PRINTING AND VISUALS
-        if t % 200 == 0 or t == ITERS:
+        if t % 500 == 0 or t == ITERS - 1:
             with open(FILE_NAME, 'a') as f:
                 swarm.print_gen(t, mode, f)
         if t % 20 == 0:
@@ -265,13 +280,10 @@ def update(counter):
 
 def scaffold(iters, mode):
     '''
-    Scaffold printing file and animations. Runs the main MPSO loop.
+    Scaffold printing file and animations for different approaches.
     '''
     with open(FILE_NAME, 'a') as f:
         print('\n############### ' + mode.upper() + ' ###############\n', file=f)
-    MPSO(iters, mode)
-    exit(0)
-
     # TODO
     anis.append((mode, animation.FuncAnimation(fig, update, init_func=init,
                                                interval=60, repeat=False)))
@@ -282,10 +294,12 @@ def main():
     clear()
     # clear result file
     open('MPSO_result.dat', 'w').close()
-    modes = ['scheme_1', 'scheme_3a']
+    modes = ['scheme_1', 'scheme_2', 'scheme_3a']
+    ITERS = 2000
 
     for mode in modes:
-        scaffold(2000, mode)
+        scaffold(ITERS, mode)
+        MPSO(ITERS, mode)
     exit(0)
 
     # TODO
