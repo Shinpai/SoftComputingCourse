@@ -9,7 +9,9 @@
 
 #4.1 NSGA-II, implemented nondominated sorting and crowding distance calculation
 
-#4.2 MOEA/D, Tchebycheff and weighted sum approaches implementation // WIP
+#4.2 MOEA/D, Tchebycheff and weighted sum approaches implementation
+
+#5 FINAL PROJECT: Memetic particle swarm optimization. 4 different local search approaches.
 
 #EXTRA review of a Genetic programming paper and a Memetic computation paper
 
