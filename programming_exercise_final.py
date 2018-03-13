@@ -1,7 +1,8 @@
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import random as rng
-import os, sys
+import os
+import sys
 import math
 from matplotlib import pyplot as plt
 import matplotlib.animation as animation
@@ -146,17 +147,23 @@ class Swarm:
 
     def local_search(self, schema):
         '''
-        The main part of this MPSO. 4 different schemes for local search.
+        The main part of MPSO. 4 different schemes for local search.
         \nRETURNS: Particle object
         '''
         if schema == 'scheme_1':
-            # local search in the position of gbest
+            '''
+            SCHEME 1:
+            Searches the position of swarms global best particle.
+            Returns the neighbor with best fitness.
+            '''
             neighbors = self.get_neighbors(self.gbest)
             return max(neighbors, key=lambda x: x.fitness)
         elif schema == 'scheme_2':
-            # local search for each position if rng value (0 - 1)
-            # is below threshold
-            # threshold parameter r > 0
+            '''
+            SCHEME 2:
+            Checks every particles r_for_local value (randomized 0 - 1),
+            if the value is below threshold: local search on that particle.
+            '''
             threshold = .2
             results = []
             for part in self.particles:
@@ -165,7 +172,12 @@ class Swarm:
                     results.append(max(naap, key=lambda x: x.fitness))
             return max(results, key=lambda x: x.fitness)
         elif schema == 'scheme_3a':
-            # search on best position and randomly selected positions
+            '''
+            SCHEME 3a:
+            Local search on global best particle (as in scheme 1)
+            and for a random sample of the swarm.
+            I've chosen here to take 4 samples.
+            '''
             results = []
             # best (same as scheme 1)
             best_neighbors = self.get_neighbors(self.gbest)
@@ -177,8 +189,12 @@ class Swarm:
                 results.append(max(rng_neighbors, key=lambda x: x.fitness))
             return max(results, key=lambda x: x.fitness)
         elif schema == 'scheme_3b':
-            # search on best position and randomly selected positions
-            # search space is defined by parameter SS
+            '''
+            SCHEME 3b:
+            Same as 3a above, but the difference between the global best particles
+            fitness and sample particles fitnesses is compared to value c_rand * SS.
+            c_rand is a random value between 0, 1 and SS is the search space of neighbors.
+            '''
             results = []
             c_rand = rng.random()
             SS = R_NEIGHBORS * 2
