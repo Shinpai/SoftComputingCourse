@@ -12,7 +12,7 @@ import matplotlib.animation as animation
 
 # PARAMETERS, McCormick function
 FILE_NAME = 'MPSO_' + sys.argv[1] + '.dat'
-POPULATION_SIZE = 40
+POPULATION_SIZE = 100
 ACC_CONST = 2
 VMAX = 3
 DIM = 2
@@ -245,7 +245,7 @@ def MPSO(ITERS, mode):
             par = vanha if vanha.fitness < uusi.fitness else uusi
 
             # LOCAL SEARCH
-            if t % 100 == 0:
+            if t % 20 == 0:
                 y = swarm.local_search(mode)
                 # Compare to previous particle and choose optimal
                 par = par if par.fitness < y.fitness else y
@@ -254,9 +254,7 @@ def MPSO(ITERS, mode):
         if t % 500 == 0 or t == ITERS - 1:
             with open(FILE_NAME, 'a') as f:
                 swarm.print_gen(t, mode, f)
-        if t % 20 == 0:
-            make_frame(swarm, mode)
-
+        make_frame(swarm, mode)
         t += 1
 
 
@@ -300,10 +298,8 @@ def update(counter):
 
 def main():
     clear()
-    # clear result file
-    open('MPSO_result.dat', 'w').close()
     modes = ['scheme_1', 'scheme_2', 'scheme_3a', 'scheme_3b']
-    ITERS = 2000
+    ITERS = 1500
 
     if len(sys.argv) == 2 and sys.argv[1] in modes:
         mode = str(sys.argv[1])
@@ -311,6 +307,9 @@ def main():
         print('Give scheme in args. Implemented schemes:')
         print(modes)
         exit(0)
+
+    # clear result file
+    open(FILE_NAME, 'w').close()
 
     with open(FILE_NAME, 'a') as f:
         print('\n############### ' + mode.upper() + ' ###############\n', file=f)

@@ -2,22 +2,22 @@
 ############### SCHEME_2 ###############
 
 ITERS: 0, scheme_2
-gbest fit: -1.707
-pos: (-0.289,-1.742)
+gbest fit: -1.884
+pos: (-0.442,-1.612)
 
 ITERS: 500, scheme_2
 gbest fit: -1.91
-pos: (-0.533,-1.494)
+pos: (-0.494,-1.533)
 
 ITERS: 1000, scheme_2
 gbest fit: -1.913
-pos: (-0.557,-1.563)
+pos: (-0.534,-1.542)
 
 ITERS: 1500, scheme_2
 gbest fit: -1.913
-pos: (-0.557,-1.563)
+pos: (-0.548,-1.544)
 
 ITERS: 1999, scheme_2
 gbest fit: -1.913
-pos: (-0.557,-1.563)
+pos: (-0.548,-1.544)
 
